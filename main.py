@@ -38,7 +38,8 @@ while is_running:  # tant que la boucle est vraie le jeu continue
         if event.type == pygame.QUIT:  # Si l'évènement actionné par l'utilisateur est égal à celui associé à fermer la fenêtre
             is_running = False
 
-        game.ui.watching(event, mouse_x, mouse_y)  # appelle la fonction watching depuis ui passant par game
+        game.ui.watching(event, mouse_x, mouse_y, "button")  # appelle la fonction watching depuis ui passant par game
+        game.ui.watching(event, mouse_x, mouse_y, "positioning")
 
 
     pygame.display.flip()  # Actualise l'écran

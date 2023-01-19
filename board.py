@@ -3,40 +3,29 @@ import pygame.sprite
 
 class Boat(pygame.sprite.Sprite):
     def __init__(self):
-        super(Boat, self).__init__()
+        super().__init__()
         self.name = str()
+        self.size_x = 0
+        self.size_y = 0
+        self.taille = 1
+        self.positioning = True
         self.is_touched = False
         self.is_dead = False
-
-    def initialize(self):
-        if self.name == "Airport":
-            print("Creating Aiport")
-            self.size_x, self.size_y = 300, 40
-            color = [50, 30, 30]
-        else:
-            print("Creating BASIC")
-            self.size_x, self.size_y = 80, 30
-            color = [30, 30, 50]
-        self.image = pygame.Surface([self.size_x, self.size_y])
-        self.rect = self.rect = pygame.draw.rect(self.image,  # image
-                                                     color,  # color
-                                                     pygame.Rect(0, 0, self.size_x, self.size_y))
-        self.rect.x = 0
-        self.rect.y = 0
-        print("BOAT CREATED")
 
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, x, y, tileSize, color):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface([tileSize, tileSize])
+        self.tileSize = tileSize
+        self.image = pygame.Surface([self.tileSize, self.tileSize])
         self.color = color
         self.rect = pygame.draw.rect(self.image,  # image
                                      self.color,  # color
-                                     pygame.Rect(0, 0, tileSize, tileSize))
+                                     pygame.Rect(0, 0, self.tileSize, self.tileSize))
         self.size_x, self.size_y = self.image.get_size()
         self.rect.x = x
         self.rect.y = y
+        self.coordonnee = [0, 0]
         self.is_boat_on = False
 
 
@@ -45,9 +34,11 @@ class Board(pygame.sprite.Sprite):
         super(Board, self).__init__()
         self.game = game
         print("----")
-        print(self.game.resolution)
+        print(self.game.resolution)  # debugging
         print("----")
-        self.size = 7
+        self.size = 10  # définit la taille du plateau
+        self.name = "player" # définit si le plateau est celui du joueur ou de l'ordi
+        self.maxBoat = 10  # définit le nombre maximum de bateau qu'il peut y avoir sur le plateau
         self.all_tiles = pygame.sprite.Group()
         self.all_boats = pygame.sprite.Group()
         self.initialization()
@@ -67,4 +58,5 @@ class Board(pygame.sprite.Sprite):
                 #print(x, color)
                 tile = Tile(x
                             , y * tileSize, tileSize, color)
+                tile.coordonnee = [i,y]
                 self.all_tiles.add(tile)
