@@ -1,6 +1,12 @@
 import pygame.sprite
 
-
+# crée la classe bateau
+# avec un nom (id) -> pour savoir quels paramètres on donne au bateau
+# une taille -> pour savoir combien de cases il occupe lors du placement.
+# des coordonnées pour savoir ou il se trouve
+# une appartenance, pour savoir si le bateau est au joueur ou bien à l'ordinateur
+# s'il est en train d'être positionné, pour qu'il obéisse à des règles spéciales, etc.
+# s'il est touché.
 class Boat(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -9,10 +15,16 @@ class Boat(pygame.sprite.Sprite):
         self.size_y = 0
         self.taille = 1
         self.positioning = True
-        self.is_touched = False
+        self.user = "player"
+        self.is_touched = [0]
+        self.coordonnee = [-1, -1]
         self.is_dead = False
 
 
+# une class Case
+# avec des coordonnées, pour les comparer à celle des bateaux et aussi pour distinguer les cases les unes des autres.
+# un utilisateur, pour différencier les cases du joueur et de l'ordinateur (elles auront les mêmes coordonnées).
+# une variable pour savoir si la case a un bateau dessus, pour ne pas poser d'autres bateaux dessus.
 class Tile(pygame.sprite.Sprite):
     def __init__(self, x, y, tileSize, color):
         pygame.sprite.Sprite.__init__(self)
@@ -25,10 +37,17 @@ class Tile(pygame.sprite.Sprite):
         self.size_x, self.size_y = self.image.get_size()
         self.rect.x = x
         self.rect.y = y
+        self.user = "player"
         self.coordonnee = [0, 0]
         self.is_boat_on = False
 
 
+# une class Plateau
+# avec un nom pour savoir si c'est le plateau du joueur ou bien de l'ordinateur
+# une taille pour savoir combien de cases a le plateau
+# un nombre maximum de bateau, peut être différent pour le joueur et l'ordinateur.
+# un groupe pour toutes les cases que contient le plateau
+# un groupe pour tous les bateaux que contient le plateau
 class Board(pygame.sprite.Sprite):
     def __init__(self, game):
         super(Board, self).__init__()
@@ -37,26 +56,25 @@ class Board(pygame.sprite.Sprite):
         print(self.game.resolution)  # debugging
         print("----")
         self.size = 10  # définit la taille du plateau
-        self.name = "player" # définit si le plateau est celui du joueur ou de l'ordi
+        self.name = "player"  # définit si le plateau est celui du joueur ou de l'ordi
         self.maxBoat = 10  # définit le nombre maximum de bateau qu'il peut y avoir sur le plateau
         self.all_tiles = pygame.sprite.Group()
         self.all_boats = pygame.sprite.Group()
         self.initialization()
 
+# crée les cases du plateau
     def initialization(self):
         tileSize = round((self.game.resolution[1] - 48) / self.size)
 
         for y in range(0, self.size):
-            #print("------")
             for i in range(0, self.size):
 
+                # calcule la couleur de la case (inutile tbh)
                 color = [0,0,255]
                 calcul = min(((self.size-1)/2 - abs(y - (self.size-1)/2)), ((self.size-1)/2 - abs(i - (self.size-1)/2)))
                 color[2] = color[2] - (min(150,self.size*5)/self.size) * calcul*2.5
 
                 x = i * tileSize + (self.game.resolution[0] / 2 - self.size * tileSize / 2)
-                #print(x, color)
-                tile = Tile(x
-                            , y * tileSize, tileSize, color)
+                tile = Tile(x, y * tileSize, tileSize, color)
                 tile.coordonnee = [i,y]
                 self.all_tiles.add(tile)
