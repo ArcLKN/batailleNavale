@@ -52,15 +52,14 @@ class Board(pygame.sprite.Sprite):
     def __init__(self, game):
         super(Board, self).__init__()
         self.game = game
-        print("----")
-        print(self.game.resolution)  # debugging
-        print("----")
+        #print("----")
+        #print(self.game.resolution)  # debugging
+        #print("----")
         self.size = 10  # définit la taille du plateau
         self.name = "player"  # définit si le plateau est celui du joueur ou de l'ordi
         self.maxBoat = 10  # définit le nombre maximum de bateau qu'il peut y avoir sur le plateau
         self.all_tiles = pygame.sprite.Group()
         self.all_boats = pygame.sprite.Group()
-        self.initialization()
 
 # crée les cases du plateau
     def initialization(self):
