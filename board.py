@@ -71,8 +71,8 @@ class Board(pygame.sprite.Sprite):
         self.tileSize = round((self.game.resolution[1] - 48) / self.size)
         self.name = "player"  # définit si le plateau est celui du joueur ou de l'ordi
         self.allCross = pygame.sprite.Group()
-        self.gridHitImage = pygame.image.load("gridHitImage.png")
-        self.gridFlopImage = pygame.image.load("gridFlopImage.png")
+        self.gridHitImage = pygame.image.load("assets/gridHitImage.png")
+        self.gridFlopImage = pygame.image.load("assets/gridFlopImage.png")
         self.gridHitImage = pygame.transform.smoothscale(self.gridHitImage, (self.tileSize, self.tileSize))
         self.gridFlopImage = pygame.transform.smoothscale(self.gridFlopImage, (self.tileSize, self.tileSize))
 

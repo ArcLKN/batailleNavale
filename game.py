@@ -34,7 +34,7 @@ class Game():
         self.all_Tiles = self.player_board.all_tiles  # pas super utile mais existe
 
         # curseur cible
-        self.cible_image = pygame.image.load("cible.png")
+        self.cible_image = pygame.image.load("assets/cible.png")
         self.cible_size_x, self.cible_size_y = self.cible_image.get_size()
         self.cible_image = pygame.transform.smoothscale(self.cible_image,
                                                         (round(self.cible_size_x / 8), round(self.cible_size_y / 8)))
