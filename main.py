@@ -15,7 +15,6 @@ FPS = 60
 black_color = [0, 0, 0]
 white_color = [255, 255, 255]
 
-
 # debugging
 my_font = pygame.font.SysFont('Comic Sans MS', 30)
 cursor = pygame.Surface([5, 5])  # provisoire
@@ -39,6 +38,7 @@ is_running = True
 while is_running:  # tant que la boucle est vraie le jeu continue
 
     mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
+
     posText = ("x: "+str(mouse_x)+", y: "+str(mouse_y))
     text_surface = my_font.render(posText, False, white_color)
 

@@ -34,12 +34,12 @@ class UI(pygame.sprite.Sprite):
             print("Creating Aiport")
             boat.size_x, boat.size_y = 330, 40
             color = [50, 30, 30]
-            boat.taille = 4
+            boat.width = 4
         else:
             print("Creating BASIC")
             boat.size_x, boat.size_y = 80, 30
             color = [30, 30, 50]
-            boat.taille = 2
+            boat.width = 2
         boat.size_x, boat.size_y = (boat.size_x * 7) / board.size, (boat.size_y * 7) / board.size
         boat.image = pygame.Surface([boat.size_x, boat.size_y])
         boat.rect = boat.rect = pygame.draw.rect(boat.image,  # image
@@ -83,12 +83,24 @@ class UI(pygame.sprite.Sprite):
             if t.rect.collidepoint(e.rect.x, e.rect.y):  # si la souris est sur la case
                 is_placeable = True  # par défaut c'est bon
                 # vérifie qu'il y assez de case pour mettre le bateau
-                if board.size - t.coordonnee[0] >= e.taille:
+                if board.size - t.coordonnee[0] >= e.width and board.size - t.coordonnee[1] >= e.height:
                     for t2 in board.all_tiles:  # pour chaque case du plateau
                         # si la case est sur la meme ligne que celle choisie
+                        #pour les abscisses
                         if t2.coordonnee[1] == t.coordonnee[1]:
                             # si la case fait partie de celles où sera le bateau
-                            if t.coordonnee[0] + e.taille > t2.coordonnee[0] >= t.coordonnee[0]:
+                            if t.coordonnee[0] + e.width > t2.coordonnee[0] >= t.coordonnee[0]:
+                                # si la case a déjà un bateau
+                                if t2.is_boat_on:
+                                    e.kill()
+                                    self.is_positioning = False
+                                    # arrête de regarder pour les autres cases
+                                    # parce que si une case est mauvaise tout le reste est mauvais.
+                                    return
+                        # pour les ordonnées
+                        if t2.coordonnee[0] == t.coordonnee[0]:
+                            # si la case fait partie de celles où sera le bateau
+                            if t.coordonnee[1] + e.height > t2.coordonnee[1] >= t.coordonnee[1]:
                                 # si la case a déjà un bateau
                                 if t2.is_boat_on:
                                     e.kill()
@@ -103,7 +115,7 @@ class UI(pygame.sprite.Sprite):
                 if is_placeable:  # si le bateau n'est pas pas placable (donc est placable)
                     for t2 in board.all_tiles:  # pour chaque case ou est le bateau
                         if t2.coordonnee[1] == t.coordonnee[1]:
-                            if t.coordonnee[0] + e.taille > t2.coordonnee[0] >= t.coordonnee[0]:
+                            if t.coordonnee[0] + e.width > t2.coordonnee[0] >= t.coordonnee[0]:
                                 # change la valeur de la case pour dire qu'il y a un bateau dessus
                                 t2.is_boat_on = True
                     e.rect.x = t.rect.x + t.size_x / 2
@@ -132,6 +144,19 @@ class UI(pygame.sprite.Sprite):
                 if e.positioning:
                     e.rect[0] = mouse_x
                     e.rect[1] = mouse_y
+                    if event.type == pygame.KEYUP:
+                        if event.key == pygame.K_r:
+                            e.image = pygame.transform.rotate(e.image, 90)
+                            foo = e.width
+                            e.width = e.height
+                            e.height = foo
+                            if not e.rotation:
+                                e.rotation = True
+                            else:
+                                e.rotation = False
+                            e.rect = e.image.get_rect()
+                            e.rect[0] = mouse_x
+                            e.rect[1] = mouse_y
 
         elif event.type == pygame.MOUSEBUTTONUP:
             if check == "button":

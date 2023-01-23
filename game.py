@@ -1,6 +1,6 @@
 import pygame.sprite
 
-from board import Board, Boat
+from board import Board, Boat, Cross
 from UI import UI
 from computer import Computer
 
@@ -20,9 +20,12 @@ class Game():
         self.computer_board.initialization()
 
         self.boat = Boat()
+        self.board = Board(self)
 
         self.ui = UI(self)
         self.stateBoard = "player"
+        self.status = "positionning"
+        self.timer = 120
 
         self.computer = Computer(self)
         self.computer.putBoat(self.computer_board)
@@ -30,12 +33,45 @@ class Game():
 
         self.all_Tiles = self.player_board.all_tiles  # pas super utile mais existe
 
-        # print("Len:",str(len(self.all_Tiles)))
+        # curseur cible
+        self.cible_image = pygame.image.load("cible.png")
+        self.cible_size_x, self.cible_size_y = self.cible_image.get_size()
+        self.cible_image = pygame.transform.smoothscale(self.cible_image,
+                                                        (round(self.cible_size_x / 8), round(self.cible_size_y / 8)))
+        self.cible_size_x, self.cible_size_y = self.cible_image.get_size()
+        self.cible_rect = self.cible_image.get_rect()
 
     def watching(self, event):
         if event.type == pygame.KEYUP:  # Si touche relaché
             if event.key == pygame.K_j:  # si la touche est j
                 self.switch_Board()  # appelle la fonction switch_Board
+        if event.type == pygame.MOUSEBUTTONUP:
+            if self.status == "hit":
+                self.hitCase(event.pos)
+
+        if len(self.player_board.all_boats) == self.player_board.maxBoat and not self.ui.is_positioning and self.status == "positionning":
+            self.status = "playing"
+            self.timer = 120
+        if self.status == "playing":
+            self.timer -= 1
+            print(self.timer)
+            if self.timer == 0:
+                self.status = "hit"
+
+    def hitCase(self, mousePos):
+        for tile in self.computer_board.all_tiles:
+            if tile.rect.collidepoint(mousePos):
+                if tile.is_boat_on:
+                    image = self.board.gridHitImage
+                    status = 2
+                else:
+                    status = 1
+                    image = self.board.gridFlopImage
+                cross = Cross(status, image)
+                cross.rect = image.get_rect()
+                cross.rect.x = tile.coordonnee[0] * self.board.tileSize + (self.resolution[0] / 2 - self.board.size * self.board.tileSize / 2)
+                cross.rect.y = tile.coordonnee[1] * self.board.tileSize
+                self.board.allCross.add(cross)
 
     # fonction pour changer l'affichage du plateau (soit celui du joueur soit de l'ordi ou sinon spécifié)
     def switch_Board(self, case=None):
@@ -63,4 +99,15 @@ class Game():
             for e in self.computer_board.all_boats:
                 screen.blit(e.image, e.rect)
 
-        # screen.blit(self., self.ui.putBoatRect)
+        if self.status == "hit":
+
+            mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
+
+            self.cible_rect.x = mouse_x - self.cible_size_x / 2
+            self.cible_rect.y = mouse_y - self.cible_size_y / 2
+
+            screen.blit(self.cible_image, self.cible_rect)
+
+            for e in self.board.allCross:
+                if e.status > 0:
+                    screen.blit(e.image, e.rect)
