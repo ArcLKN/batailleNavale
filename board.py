@@ -43,11 +43,13 @@ class Tile(pygame.sprite.Sprite):
         self.user = "player"
         self.coordonnee = [0, 0]
         self.is_boat_on = False
+        self.is_cross_on = False
 
 class Cross(pygame.sprite.Sprite):
     def __init__(self, status, image):
         pygame.sprite.Sprite.__init__(self)
         self.status = status
+        self.tag = "player"
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.x = 0
@@ -79,6 +81,7 @@ class Board(pygame.sprite.Sprite):
         self.maxBoat = 3  # définit le nombre maximum de bateau qu'il peut y avoir sur le plateau
         self.all_tiles = pygame.sprite.Group()
         self.all_boats = pygame.sprite.Group()
+        self.life = 0
 
 # crée les cases du plateau
     def initialization(self):

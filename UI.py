@@ -122,11 +122,12 @@ class UI(pygame.sprite.Sprite):
                     e.rect.y = t.rect.y + t.size_y / 2 - e.size_y / 2
                     e.positioning = False  # fin du positionnement
                     self.is_positioning = False
+                    board.life += e.width
                     break
 
     # vérifie chaque action en rapport avec des inputs de l'utilisateur
     def watching(self, event, mouse_x, mouse_y, check):
-        if event.type == pygame.MOUSEBUTTONDOWN:  # si l'évènement est "Bouton de la souris pressé"
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # si l'évènement est "Bouton Gauche de la souris pressé"
             if check == "button":
                 for e in self.all_buttons:
                     if e.rect.collidepoint((mouse_x, mouse_y)):

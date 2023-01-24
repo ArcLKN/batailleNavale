@@ -25,9 +25,9 @@ cursor_rect = cursor.get_rect()
 # Récupérer la taille d'écran de l'utilisateur.
 display_w = pygame.display.Info().current_w  # Valeur de la largeur
 display_h = pygame.display.Info().current_h  # Valeur de la hauteur
-resolution = [display_w,display_h]  # pour faciliter l'utilisation
+resolution = [display_w,display_h-72]  # pour faciliter l'utilisation
 print(f"width = {resolution[0]}, height = {resolution[1]}")  # affiche les valeurs (pour le debugging)
-screen = pygame.display.set_mode((resolution[0], int(resolution[1] - (75 / 1080 * resolution[1]))))  # Redimension écran
+screen = pygame.display.set_mode((resolution[0], resolution[1]))  # Redimension écran
 
 game = Game(resolution, screen)  # pour appeler les différentes fonctions situées dans la classe Game
 
@@ -47,8 +47,6 @@ while is_running:  # tant que la boucle est vraie le jeu continue
     cursor_rect.y = mouse_y
     screen.blit(cursor, cursor_rect)
 
-
-
     # Si on appuie sur le bouton fermer de la fenêtre, quitte le jeu.
     for event in pygame.event.get():  # Pour chaque évènement inclu dans la librairie pygame
         if event.type == pygame.QUIT:  # Si l'évènement actionné par l'utilisateur est égal à celui associé à fermer la fenêtre
@@ -58,6 +56,8 @@ while is_running:  # tant que la boucle est vraie le jeu continue
         game.ui.watching(event, mouse_x, mouse_y, "positioning")
         game.watching(event)
 
+    if not game.is_running:
+        is_running = False
 
     pygame.display.flip()  # Actualise l'écran
 

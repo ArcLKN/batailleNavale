@@ -12,6 +12,7 @@ class Computer(pygame.sprite.Sprite):
     def putBoat(self, board):
         print("Condition",str(self.game.ui.limitBoat(board)))
         while self.game.ui.limitBoat(board):
-            self.game.ui.putBoat(random.choice(["BASIC", "BASIC", "Airport"]), board, "computer")
+            bateau = random.choice(["BASIC", "BASIC", "Airport"])
+            self.game.ui.putBoat(bateau, board, "computer")
         print(board.all_boats)
         print("DONE PLACING COMPUTER'S BOATS")

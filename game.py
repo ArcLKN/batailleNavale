@@ -1,3 +1,5 @@
+import random
+
 import pygame.sprite
 
 from board import Board, Boat, Cross
@@ -27,8 +29,11 @@ class Game():
         self.status = "positionning"
         self.timer = 120
 
+        self.is_running = True
+
         self.computer = Computer(self)
         self.computer.putBoat(self.computer_board)
+        self.computer_board.name = "computer"
         print("Nombre de bateaux Ordinateur :", str(len(self.computer_board.all_boats)))
 
         self.all_Tiles = self.player_board.all_tiles  # pas super utile mais existe
@@ -45,33 +50,64 @@ class Game():
         if event.type == pygame.KEYUP:  # Si touche relaché
             if event.key == pygame.K_j:  # si la touche est j
                 self.switch_Board()  # appelle la fonction switch_Board
-        if event.type == pygame.MOUSEBUTTONUP:
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if self.status == "hit":
-                self.hitCase(event.pos)
+                self.hitCase(event.pos, self.player_board, self.computer_board, "player")
 
         if len(self.player_board.all_boats) == self.player_board.maxBoat and not self.ui.is_positioning and self.status == "positionning":
             self.status = "playing"
-            self.timer = 120
-        if self.status == "playing":
+            self.timer = 60
+        elif self.status == "playing":
             self.timer -= 1
-            print(self.timer)
             if self.timer == 0:
-                self.status = "hit"
+                self.status = random.choice(["hit", "computerHit"])
+        if self.status == "computerHit":
+            tileSize = round((self.resolution[1] - 48) / self.computer_board.size)
+            rangeX = (self.resolution[0] / 2 - self.computer_board.size * tileSize / 2)
+            x = random.randint(rangeX, rangeX + tileSize * (self.computer_board.size - 1))
+            y = random.randint(0, tileSize * (self.computer_board.size - 1))
+            result = self.hitCase((x, y), self.computer_board, self.player_board, "computer")
+            while not result:
+                tileSize = round((self.resolution[1] - 48) / self.computer_board.size)
+                rangeX = (self.resolution[0] / 2 - self.computer_board.size * tileSize / 2)
+                x = random.randint(rangeX, rangeX + tileSize * (self.computer_board.size - 1))
+                y = random.randint(0, tileSize * (self.computer_board.size - 1))
+                result = self.hitCase((x, y), self.computer_board, self.player_board, "computer")
 
-    def hitCase(self, mousePos):
-        for tile in self.computer_board.all_tiles:
+    def hitCase(self, mousePos, selfBoard, hittingBoard, tag):
+        for tile in hittingBoard.all_tiles:
             if tile.rect.collidepoint(mousePos):
                 if tile.is_boat_on:
-                    image = self.board.gridHitImage
+                    image = selfBoard.gridHitImage
                     status = 2
+                    hittingBoard.life -= 1
+                    print(hittingBoard.name,"got hit, life :", str(hittingBoard.life))
                 else:
                     status = 1
-                    image = self.board.gridFlopImage
+                    image = selfBoard.gridFlopImage
+                if tile.is_cross_on:
+                    return False
+                tile.is_cross_on = True
                 cross = Cross(status, image)
                 cross.rect = image.get_rect()
-                cross.rect.x = tile.coordonnee[0] * self.board.tileSize + (self.resolution[0] / 2 - self.board.size * self.board.tileSize / 2)
-                cross.rect.y = tile.coordonnee[1] * self.board.tileSize
-                self.board.allCross.add(cross)
+                cross.rect.x = tile.coordonnee[0] * selfBoard.tileSize + (self.resolution[0] / 2 - selfBoard.size * selfBoard.tileSize / 2)
+                cross.rect.y = tile.coordonnee[1] * selfBoard.tileSize
+                cross.tag = tag
+                selfBoard.allCross.add(cross)
+                if self.status == "hit":
+                    #print("Player Hit")
+                    self.status = "computerHit"
+                else:
+                    #print("Computer Hit at :", str(mousePos))
+                    self.status = "hit"
+                if self.player_board.life == 0:
+                    self.is_running = False
+                    print("L'ordinateur a gagné !")
+                elif self.computer_board.life == 0:
+                    self.is_running = False
+                    print("Le joueur a gagné !")
+                return True
+        return False
 
     # fonction pour changer l'affichage du plateau (soit celui du joueur soit de l'ordi ou sinon spécifié)
     def switch_Board(self, case=None):
@@ -108,6 +144,11 @@ class Game():
 
             screen.blit(self.cible_image, self.cible_rect)
 
-            for e in self.board.allCross:
-                if e.status > 0:
-                    screen.blit(e.image, e.rect)
+            if self.stateBoard == "player":
+                for e in self.player_board.allCross:
+                    if e.status > 0:
+                        screen.blit(e.image, e.rect)
+            else:
+                for e in self.computer_board.allCross:
+                    if e.status > 0:
+                        screen.blit(e.image, e.rect)
