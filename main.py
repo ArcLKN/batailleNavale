@@ -40,6 +40,27 @@ resolution = [display_w,display_h-72]  # pour faciliter l'utilisation
 print(f"width = {resolution[0]}, height = {resolution[1]}")  # affiche les valeurs (pour le debugging)
 screen = pygame.display.set_mode((resolution[0], resolution[1]))  # Redimension écran
 
+#générer la fenêtre de notre jeu
+pygame.display.set_caption("Bataille Navale")
+
+#importer charger l'arrière plan du jeu
+background = pygame.image.load('assets/fond zelda.jpg')
+background = pygame.transform.smoothscale(background, (display_w, display_h))
+
+#importer charger notre bannière
+banner = pygame.image.load('assets/Logo.png')
+banner = pygame.transform.scale(banner,(250,250))
+banner_rect = banner.get_rect()
+banner_rect.x = round(screen.get_width()/2.6)
+
+#importer charger notre bouton pour lancer la partie
+play_button = pygame.image.load('assets/start.png')
+size_x, size_y = play_button.get_size()
+play_button = pygame.transform.scale(play_button, (size_x/(size_x/400), size_y/(size_x/400)))
+play_button_rect = play_button.get_rect()
+play_button_rect.x = round(screen.get_width()/3.33)
+play_button_rect.y = round(screen.get_height()-size_y/(size_x/400)/1.5)
+
 game = Game(resolution, screen)  # pour appeler les différentes fonctions situées dans la classe Game
 
 print(pygame.display.Info())  # affiche les informations de l'écran (pour le debugging)
@@ -47,6 +68,8 @@ print(pygame.display.Info())  # affiche les informations de l'écran (pour le de
 is_running = True
 
 while is_running:  # tant que la boucle est vraie le jeu continue
+
+    screen.fill(black_color)
 
     mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
 
@@ -58,21 +81,39 @@ while is_running:  # tant que la boucle est vraie le jeu continue
     cursor_rect.y = mouse_y
     screen.blit(cursor, cursor_rect)
 
+    #apliquer l'arrière plan de notre jeu
+    screen.blit(background, (0,0))
+
+    #verifier si notre jeu a commencé ou non
+    if game.is_playing :
+        #declencher les instruction de la partie
+        game.update(screen)
+    #verifier si notre jeu n'a pas commencé
+    else:
+        #ajouter mon ecran de bienvenue
+        screen.blit(banner, banner_rect)
+        screen.blit(play_button, play_button_rect)
+
     # Si on appuie sur le bouton fermer de la fenêtre, quitte le jeu.
     for event in pygame.event.get():  # Pour chaque évènement inclu dans la librairie pygame
         if event.type == pygame.QUIT:  # Si l'évènement actionné par l'utilisateur est égal à celui associé à fermer la fenêtre
             is_running = False
 
-        game.ui.watching(event, mouse_x, mouse_y, "button")  # appelle la fonction watching depuis ui passant par game
-        game.ui.watching(event, mouse_x, mouse_y, "positioning")
-        game.watching(event)
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+        #verification pour savoir si la souris est sur le bouton start
+            if play_button_rect.collidepoint(event.pos):
+                #mettre le jeu en mode lancé
+                game.is_playing = True
+
+        if game.is_playing:
+            game.ui.watching(event, mouse_x, mouse_y, "button")  # appelle la fonction watching depuis ui passant par game
+            game.ui.watching(event, mouse_x, mouse_y, "positioning")
+            game.watching(event)
 
     if not game.is_running:
         is_running = False
 
     pygame.display.flip()  # Actualise l'écran
-
-    game.update(screen)  # appelle la fonction update de game qui permet d'afficher toutes les images
 
     # fixer le nombre de FPS
     clock.tick(FPS)
