@@ -1,7 +1,5 @@
 # coding: utf8
 import pygame  # importation des différents modules
-import sys
-import os
 #pygame.mixer.init(frequency=44000, size=16, channels=3, buffer=4096, devicename=None )
 from game import Game  # Importation de game.py
 
@@ -12,7 +10,6 @@ pygame.mixer.Channel(1).set_volume(1.0)
 pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP, pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN])
 
 #mixer.music.load("SFX/Menu.mp3")
-pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Background.mp3"))
 #mixer.music.set_volume(1)
 #mixer.music.play(1)
 
@@ -49,23 +46,25 @@ background = pygame.transform.smoothscale(background, (display_w, display_h))
 
 #importer charger notre bannière
 banner = pygame.image.load('assets/Logo.png')
-banner = pygame.transform.scale(banner,(300,300))
+banner = pygame.transform.scale(banner,(250,250))
 banner_rect = banner.get_rect()
-banner_rect.x = round(screen.get_width()/2.3)
+banner_rect.x = round(screen.get_width()/2.6)
 
 #importer charger notre bouton pour lancer la partie
 play_button = pygame.image.load('assets/start.png')
 size_x, size_y = play_button.get_size()
-play_button = pygame.transform.scale(play_button, (size_x/(size_x/500), size_y/(size_x/500)))
+play_button = pygame.transform.scale(play_button, (size_x/(size_x/400), size_y/(size_x/400)))
 play_button_rect = play_button.get_rect()
-play_button_rect.x = round(screen.get_width()/2.8)
-play_button_rect.y = round(screen.get_height()-size_y/(size_x/550)/1.5)
+play_button_rect.x = round(screen.get_width()/3.33)
+play_button_rect.y = round(screen.get_height()-size_y/(size_x/400)/1.5)
 
 game = Game(resolution, screen)  # pour appeler les différentes fonctions situées dans la classe Game
 
 print(pygame.display.Info())  # affiche les informations de l'écran (pour le debugging)
 
 is_running = True
+
+pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Menu.mp3"))
 
 while is_running:  # tant que la boucle est vraie le jeu continue
 
@@ -102,8 +101,11 @@ while is_running:  # tant que la boucle est vraie le jeu continue
         elif event.type == pygame.MOUSEBUTTONDOWN:
         #verification pour savoir si la souris est sur le bouton start
             if play_button_rect.collidepoint(event.pos):
+                game.initialisation()
                 #mettre le jeu en mode lancé
                 game.is_playing = True
+                pygame.mixer.Channel(3).play(pygame.mixer.Sound("SFX/Menu jouer.wav"))
+                pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Background.mp3"))
 
         if game.is_playing:
             game.ui.watching(event, mouse_x, mouse_y, "button")  # appelle la fonction watching depuis ui passant par game

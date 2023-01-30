@@ -29,10 +29,6 @@ class Game():
 
         self.screen = screen  # pas super utile mais existe
         self.resolution = resolution  # pas super utile mais existe
-        self.player_board = Board(self)  # crée le plateau du joueur
-        self.player_board.initialization()
-        self.computer_board = Board(self)  # crée le plateau de l'ordi
-        self.computer_board.initialization()
 
         self.boat = Boat()
         self.board = Board(self)
@@ -44,15 +40,8 @@ class Game():
         self.timer = 120
         self.turn = 0
 
-        self.is_playing = False
         self.is_running = True
-
-        self.computer = Computer(self)
-        self.computer.putBoat(self.computer_board)
-        self.computer_board.name = "computer"
-        print("Nombre de bateaux Ordinateur :", str(len(self.computer_board.all_boats)))
-
-        self.all_Tiles = self.player_board.all_tiles  # pas super utile mais existe
+        self.is_playing = False
 
         # curseur cible
         self.cible_image = pygame.image.load("assets/cible.png")
@@ -61,6 +50,30 @@ class Game():
                                                         (round(self.cible_size_x / 8), round(self.cible_size_y / 8)))
         self.cible_size_x, self.cible_size_y = self.cible_image.get_size()
         self.cible_rect = self.cible_image.get_rect()
+
+    def initialisation(self):
+        self.player_board = Board(self)  # crée le plateau du joueur
+        self.computer_board = Board(self)  # crée le plateau de l'ordi
+        self.player_board.initialization()
+        self.computer_board.initialization()
+
+        self.computer = Computer(self)
+        self.computer.putBoat(self.computer_board)
+        self.computer_board.name = "computer"
+        print("Nombre de bateaux Ordinateur :", str(len(self.computer_board.all_boats)))
+
+        self.all_Tiles = self.player_board.all_tiles  # pas super utile mais existe
+
+    def emptying(self):
+        self.all_Tiles.empty()
+        self.player_board.all_boats.empty()
+        self.player_board.allCross.empty()
+        self.player_board.all_tiles.empty()
+        self.computer_board.all_boats.empty()
+        self.computer_board.allCross.empty()
+        self.computer_board.all_tiles.empty()
+        self.status = "positionning"
+
 
     def watching(self, event):
         if event.type == pygame.KEYUP:  # Si touche relaché
@@ -127,11 +140,13 @@ class Game():
                     #print("Computer Hit at :", str(mousePos))
                     self.status = "hit"
                 if self.player_board.life == 0:
-                    self.is_running = False
                     print("L'ordinateur a gagné !")
+                    self.emptying()
+                    self.is_playing = False
                 elif self.computer_board.life == 0:
-                    self.is_running = False
                     print("Le joueur a gagné !")
+                    self.emptying()
+                    self.is_playing = False
                 return True
         return False
 
