@@ -49,17 +49,17 @@ background = pygame.transform.smoothscale(background, (display_w, display_h))
 
 #importer charger notre bannière
 banner = pygame.image.load('assets/Logo.png')
-banner = pygame.transform.scale(banner,(250,250))
+banner = pygame.transform.scale(banner,(300,300))
 banner_rect = banner.get_rect()
-banner_rect.x = round(screen.get_width()/2.6)
+banner_rect.x = round(screen.get_width()/2.3)
 
 #importer charger notre bouton pour lancer la partie
 play_button = pygame.image.load('assets/start.png')
 size_x, size_y = play_button.get_size()
-play_button = pygame.transform.scale(play_button, (size_x/(size_x/400), size_y/(size_x/400)))
+play_button = pygame.transform.scale(play_button, (size_x/(size_x/500), size_y/(size_x/500)))
 play_button_rect = play_button.get_rect()
-play_button_rect.x = round(screen.get_width()/3.33)
-play_button_rect.y = round(screen.get_height()-size_y/(size_x/400)/1.5)
+play_button_rect.x = round(screen.get_width()/2.8)
+play_button_rect.y = round(screen.get_height()-size_y/(size_x/550)/1.5)
 
 game = Game(resolution, screen)  # pour appeler les différentes fonctions situées dans la classe Game
 
