@@ -4,6 +4,7 @@ import sys
 import os
 
 from game import Game  # Importation de game.py
+from menujeux import Application
 
 pygame.init()  # initialiser le module pygame
 
@@ -30,12 +31,16 @@ print(f"width = {resolution[0]}, height = {resolution[1]}")  # affiche les valeu
 screen = pygame.display.set_mode((resolution[0], resolution[1]))  # Redimension écran
 
 game = Game(resolution, screen)  # pour appeler les différentes fonctions situées dans la classe Game
+app = Application()
+app.menu()
 
 print(pygame.display.Info())  # affiche les informations de l'écran (pour le debugging)
 
 is_running = True
 
 while is_running:  # tant que la boucle est vraie le jeu continue
+
+    app.update()
 
     mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
 

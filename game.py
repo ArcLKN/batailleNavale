@@ -13,6 +13,8 @@ class Game():
 
     def __init__(self, resolution, screen):
         super().__init__()
+        #definir si notre jeu a commencé ou non
+        self.is_playing = False
 
         self.screen = screen  # pas super utile mais existe
         self.resolution = resolution  # pas super utile mais existe
