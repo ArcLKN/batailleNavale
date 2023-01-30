@@ -44,6 +44,7 @@ class Game():
         self.timer = 120
         self.turn = 0
 
+        self.is_playing = False
         self.is_running = True
 
         self.computer = Computer(self)
