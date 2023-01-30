@@ -2,11 +2,21 @@
 import pygame  # importation des différents modules
 import sys
 import os
-
+#pygame.mixer.init(frequency=44000, size=16, channels=3, buffer=4096, devicename=None )
 from game import Game  # Importation de game.py
-from menujeux import Application
 
 pygame.init()  # initialiser le module pygame
+
+pygame.mixer.init() #Initialiser le module py mixer
+pygame.mixer.Channel(1).set_volume(1.0)
+pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP, pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN])
+
+#mixer.music.load("SFX/Menu.mp3")
+pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Background.mp3"))
+#mixer.music.set_volume(1)
+#mixer.music.play(1)
+
+
 
 # définir une clock
 clock = pygame.time.Clock()
@@ -31,16 +41,12 @@ print(f"width = {resolution[0]}, height = {resolution[1]}")  # affiche les valeu
 screen = pygame.display.set_mode((resolution[0], resolution[1]))  # Redimension écran
 
 game = Game(resolution, screen)  # pour appeler les différentes fonctions situées dans la classe Game
-app = Application()
-app.menu()
 
 print(pygame.display.Info())  # affiche les informations de l'écran (pour le debugging)
 
 is_running = True
 
 while is_running:  # tant que la boucle est vraie le jeu continue
-
-    app.update()
 
     mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
 

@@ -113,7 +113,7 @@ class UI(pygame.sprite.Sprite):
                     e.kill()
                     return  # arrête de regarder les autres cases
                 if is_placeable:  # si le bateau n'est pas pas placable (donc est placable)
-                    for t2 in board.all_tiles:  # pour chaque case ou est le bateau
+                    for t2 in board.all_tiles:  # pour chaque case où est le bateau
                         if t2.coordonnee[1] == t.coordonnee[1]:
                             if t.coordonnee[0] + e.width > t2.coordonnee[0] >= t.coordonnee[0]:
                                 # change la valeur de la case pour dire qu'il y a un bateau dessus
@@ -123,6 +123,9 @@ class UI(pygame.sprite.Sprite):
                     e.positioning = False  # fin du positionnement
                     self.is_positioning = False
                     board.life += e.width
+                    print("Name :", board.name, "/ added", str(e.width), "lives ! Now", board.life, "lives.")
+                    if board.name == "player":
+                        pygame.mixer.Channel(3).play(self.game.sound.putboat)
                     break
 
     # vérifie chaque action en rapport avec des inputs de l'utilisateur
@@ -133,7 +136,7 @@ class UI(pygame.sprite.Sprite):
                     if e.rect.collidepoint((mouse_x, mouse_y)):
                         e.clicked = True  # met le bouton en mode cliqué
                     else:
-                        e.clicked = False  # pas très utile mais évite des problèmes
+                        e.clicked = False  # pas très utile, mais évite des problèmes
             if check == "positioning" and self.is_positioning:  # si on est train de positionner un bateau
                 for e in self.game.player_board.all_boats:  # pour chaque bateau
                     if e.positioning:
@@ -163,7 +166,7 @@ class UI(pygame.sprite.Sprite):
             if check == "button":
                 # pour chaque bouton
                 for e in self.all_buttons:
-                    # vérifie s'il y a colision entre la souris et le bouton, et si le bouton a été cliqué
+                    # vérifie s'il y a collision entre la souris et le bouton, et si le bouton a été cliqué
                     if e.rect.collidepoint(event.pos) and e.clicked:
                         e.clicked = False  # remet le bouton cliqué en non cliqué
                         if self.limitBoat("player"):  # vérifie si la limite de bateau n'est pas atteinte

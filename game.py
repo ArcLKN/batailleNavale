@@ -8,13 +8,24 @@ from computer import Computer
 
 black_color = [0, 0, 0]  # pas super utile mais existe
 
+class Sound():
+
+    def __init__(self):
+        self.flop = pygame.mixer.Sound("SFX/Plouf.wav")
+        self.flop.set_volume(0.2)
+        self.bomb = pygame.mixer.Sound("SFX/Bombe3.wav")
+        self.bomb.set_volume(0.2)
+        self.putboat = pygame.mixer.Sound("SFX/Bateau posé.wav")
+        self.putboat.set_volume(0.2)
+        self.fuseBomb = pygame.mixer.Sound("SFX/WW_Bomb_Fuse.wav")
+        self.fuseBomb.set_volume(0.2)
+        self.lightBomb = pygame.mixer.Sound("SFX/WW_Bomb_Light.wav")
+        self.lightBomb.set_volume(0.2)
 
 class Game():
 
     def __init__(self, resolution, screen):
         super().__init__()
-        #definir si notre jeu a commencé ou non
-        self.is_playing = False
 
         self.screen = screen  # pas super utile mais existe
         self.resolution = resolution  # pas super utile mais existe
@@ -25,11 +36,13 @@ class Game():
 
         self.boat = Boat()
         self.board = Board(self)
+        self.sound = Sound()
 
         self.ui = UI(self)
         self.stateBoard = "player"
         self.status = "positionning"
         self.timer = 120
+        self.turn = 0
 
         self.is_running = True
 
@@ -56,6 +69,7 @@ class Game():
             if self.status == "hit":
                 self.hitCase(event.pos, self.player_board, self.computer_board, "player")
 
+
         if len(self.player_board.all_boats) == self.player_board.maxBoat and not self.ui.is_positioning and self.status == "positionning":
             self.status = "playing"
             self.timer = 60
@@ -79,14 +93,23 @@ class Game():
     def hitCase(self, mousePos, selfBoard, hittingBoard, tag):
         for tile in hittingBoard.all_tiles:
             if tile.rect.collidepoint(mousePos):
+
+                pygame.mixer.Channel(2).play(self.sound.fuseBomb)
+                pygame.mixer.Channel(2).play(self.sound.lightBomb)
                 if tile.is_boat_on:
                     image = selfBoard.gridHitImage
                     status = 2
                     hittingBoard.life -= 1
                     print(hittingBoard.name,"got hit, life :", str(hittingBoard.life))
+                    if tag == "player":
+                        pygame.mixer.Channel(3).play(self.sound.bomb)
                 else:
                     status = 1
                     image = selfBoard.gridFlopImage
+                    if tag == "player":
+                        pygame.mixer.Channel(3).play(self.sound.flop)
+
+
                 if tile.is_cross_on:
                     return False
                 tile.is_cross_on = True
@@ -111,7 +134,7 @@ class Game():
                 return True
         return False
 
-    # fonction pour changer l'affichage du plateau (soit celui du joueur soit de l'ordi ou sinon spécifié)
+    # fonction pour changer l'affichage du plateau (soit celui du joueur, soit de l'ordi ou sinon spécifié)
     def switch_Board(self, case=None):
         if case is not None:
             self.stateBoard = case
