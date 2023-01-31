@@ -109,6 +109,7 @@ while is_running:  # tant que la boucle est vraie le jeu continue
                 if game.is_option:
                     game.initialisation()
                     game.is_playing = True
+                    game.is_option = False
                 else:
                     game.is_option = True
 

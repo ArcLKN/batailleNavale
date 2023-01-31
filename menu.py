@@ -65,9 +65,11 @@ class Option:
                     for txt in self.allText:
                         if txt.tag == arrow.tag and txt.value == "int":
                             if arrow.orientation == "left":
-                                self.options[txt.tag]["value"] -= 1
+                                if self.options[txt.tag]["value"] > 3:
+                                    self.options[txt.tag]["value"] -= 1
                             else:
-                                self.options[txt.tag]["value"] += 1
+                                if self.options[txt.tag]["value"] < 30:
+                                    self.options[txt.tag]["value"] += 1
                             txt.text = self.options[txt.tag]["value"]
                             return
 
