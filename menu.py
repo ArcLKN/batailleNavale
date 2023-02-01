@@ -22,13 +22,21 @@ class Text(pygame.sprite.Sprite):
 class Option:
 
     def __init__(self, game):
+        # important
         self.game = game
+        # texte
         self.optionFont = pygame.font.SysFont('Comic Sans MS', 30)
+        # images
         self.rightArrowImage = pygame.image.load("assets/Arrow.png")
         self.rightArrowImage = pygame.transform.smoothscale(self.rightArrowImage, (50, 50))
         self.leftArrowImage = pygame.transform.flip(self.rightArrowImage, True, False)
+        # sons
+        self.arrowSound = pygame.mixer.Sound("SFX/Next.wav")
+        self.arrowSound.set_volume(0.2)
+        # groupes de sprite
         self.allArrow = pygame.sprite.Group()
         self.allText = pygame.sprite.Group()
+        # autre
         self.options = {
             "sizeBoard": {
                 "value": 10,
@@ -39,8 +47,10 @@ class Option:
                 "name": "Number of Boat"
             }
         }
+        # appel fonction
         self.groupArrow()
 
+# ajoute les sprites des flèches dans le groupe des flèches (self.allArrow) en fonction du nombre d'options.
     def groupArrow(self):
         x = 0
         for option in self.options:
@@ -66,6 +76,7 @@ class Option:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for arrow in self.allArrow:
                 if arrow.rect.collidepoint(pygame.mouse.get_pos()):
+                    pygame.mixer.Channel(2).play(self.arrowSound)
                     for txt in self.allText:
                         if txt.tag == arrow.tag and txt.value == "int":
                             if arrow.orientation == "left":
@@ -80,7 +91,7 @@ class Option:
                                                                           self.options["sizeBoard"]["value"])
                             else:
                                 if arrow.tag == "sizeBoard":
-                                    if self.options[txt.tag]["value"] >= 30:
+                                    if self.options[txt.tag]["value"] >= 26:
                                         return
                                 elif arrow.tag == "numberBoat":
                                     if self.options[txt.tag]["value"] >= self.options["sizeBoard"]["value"]:

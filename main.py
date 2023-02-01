@@ -112,10 +112,11 @@ while is_running:  # tant que la boucle est vraie le jeu continue
         #verification pour savoir si la souris est sur le bouton start
             if play_button_rect.collidepoint(event.pos):
                 if not game.is_playing and not game.is_option:
-                    pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Menu jouer.wav"))
+                    pygame.mixer.Channel(2).play(pygame.mixer.Sound("SFX/WW_MainMenu_Select.wav"))
                     game.is_option = True
                 elif game.is_option:
-                    pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Menu jouer.wav"))
+                    pygame.mixer.Channel(2).play(pygame.mixer.Sound("SFX/WW_MainMenu_Select.wav"))
+                    pygame.mixer.Channel(1).stop()
                     game.is_option = False
                     game.initialisation()
                     game.is_playing = True

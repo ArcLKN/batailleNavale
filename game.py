@@ -11,6 +11,11 @@ black_color = [0, 0, 0]  # pas super utile mais existe
 class Sound():
 
     def __init__(self):
+
+        self.returnToMenu = pygame.mixer.Sound("SFX/WW_PictoBox_Erase.wav")
+        self.pauseMenuOpen = pygame.mixer.Sound("SFX/WW_PauseMenu_Open.wav")
+        self.pauseMenuClose = pygame.mixer.Sound("SFX/WW_PauseMenu_Close.wav")
+
         self.flop = pygame.mixer.Sound("SFX/Plouf.wav")
         self.flop.set_volume(0.2)
         self.bomb = pygame.mixer.Sound("SFX/Bombe3.wav")
@@ -21,6 +26,7 @@ class Sound():
         self.fuseBomb.set_volume(0.2)
         self.lightBomb = pygame.mixer.Sound("SFX/WW_Bomb_Light.wav")
         self.lightBomb.set_volume(0.2)
+
         self.musicQueueList = [[], [], [], []]
 
     def mixing(self, channelNumber):
@@ -106,16 +112,23 @@ class Game():
             elif event.key == pygame.K_ESCAPE:
                 if self.is_pausing:
                     self.is_pausing = False
+                    pygame.mixer.Channel(2).play(self.sound.pauseMenuClose)
                 else:
                     self.is_pausing = True
+                    pygame.mixer.Channel(2).play(self.sound.pauseMenuOpen)
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if self.status == "hit" and not pygame.mixer.Channel(2).get_busy() and not self.is_pausing:
                 self.hitCase(event.pos, self.player_board, self.computer_board, "player")
             elif self.is_pausing:
                 if self.homeButtonRect.collidepoint(event.pos):
+                    pygame.mixer.Channel(2).stop()
+                    pygame.mixer.Channel(1).fadeout(10)
+                    self.sound.musicQueueList = [[], [], [], []]
+                    pygame.mixer.Channel(2).play(self.sound.returnToMenu)
                     self.is_pausing = False
                     self.is_playing = False
                     self.emptying()
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Menu.mp3"))
 
 
         if len(self.player_board.all_boats) == self.player_board.maxBoat and not self.ui.is_positioning and self.status == "positionning":
@@ -141,6 +154,8 @@ class Game():
     def hitCase(self, mousePos, selfBoard, hittingBoard, tag):
         for tile in hittingBoard.all_tiles:
             if tile.rect.collidepoint(mousePos):
+                if tile.is_cross_on:
+                    return False
                 if tag == "player":
                     self.sound.musicQueueList[1].append(self.sound.lightBomb)
                     self.sound.musicQueueList[1].append(self.sound.fuseBomb)
@@ -157,9 +172,6 @@ class Game():
                     if tag == "player":
                         self.sound.musicQueueList[1].append(self.sound.flop)
 
-
-                if tile.is_cross_on:
-                    return False
                 tile.is_cross_on = True
                 cross = Cross(status, image)
                 cross.rect = image.get_rect()
@@ -215,13 +227,6 @@ class Game():
 
         if self.status == "hit":
 
-            mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
-
-            self.cible_rect.x = mouse_x - self.cible_size_x / 2
-            self.cible_rect.y = mouse_y - self.cible_size_y / 2
-
-            screen.blit(self.cible_image, self.cible_rect)
-
             if self.stateBoard == "player":
                 for e in self.player_board.allCross:
                     if e.status > 0:
@@ -230,3 +235,9 @@ class Game():
                 for e in self.computer_board.allCross:
                     if e.status > 0:
                         screen.blit(e.image, e.rect)
+
+            mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
+            self.cible_rect.x = mouse_x - self.cible_size_x / 2
+            self.cible_rect.y = mouse_y - self.cible_size_y / 2
+
+            screen.blit(self.cible_image, self.cible_rect)
