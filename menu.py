@@ -33,6 +33,10 @@ class Option:
             "sizeBoard": {
                 "value": 10,
                 "name": "Size Board"
+            },
+            "numberBoat": {
+                "value": 3,
+                "name": "Number of Boat"
             }
         }
         self.groupArrow()
@@ -58,18 +62,30 @@ class Option:
             self.allText.add(optionValue)
             x += 1
 
-    def watching(self, event, mouse_pos):
+    def watching(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for arrow in self.allArrow:
                 if arrow.rect.collidepoint(pygame.mouse.get_pos()):
                     for txt in self.allText:
                         if txt.tag == arrow.tag and txt.value == "int":
                             if arrow.orientation == "left":
-                                if self.options[txt.tag]["value"] > 3:
-                                    self.options[txt.tag]["value"] -= 1
+                                if arrow.tag == "sizeBoard":
+                                    if self.options[txt.tag]["value"] <= 4:
+                                        return
+                                elif arrow.tag == "numberBoat":
+                                    if self.options[txt.tag]["value"] <= 1:
+                                        return
+                                self.options[txt.tag]["value"] -= 1
+                                self.options["numberBoat"]["value"] = min(self.options["numberBoat"]["value"],
+                                                                          self.options["sizeBoard"]["value"])
                             else:
-                                if self.options[txt.tag]["value"] < 30:
-                                    self.options[txt.tag]["value"] += 1
+                                if arrow.tag == "sizeBoard":
+                                    if self.options[txt.tag]["value"] >= 30:
+                                        return
+                                elif arrow.tag == "numberBoat":
+                                    if self.options[txt.tag]["value"] >= self.options["sizeBoard"]["value"]:
+                                        return
+                                self.options[txt.tag]["value"] += 1
                             txt.text = self.options[txt.tag]["value"]
                             return
 

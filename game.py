@@ -21,6 +21,13 @@ class Sound():
         self.fuseBomb.set_volume(0.2)
         self.lightBomb = pygame.mixer.Sound("SFX/WW_Bomb_Light.wav")
         self.lightBomb.set_volume(0.2)
+        self.musicQueueList = [[], [], [], []]
+
+    def mixing(self, channelNumber):
+        if not pygame.mixer.Channel(channelNumber).get_busy():
+            if len(self.musicQueueList[channelNumber-1]) > 0:
+                pygame.mixer.Channel(channelNumber).play(pygame.mixer.Sound(self.musicQueueList[channelNumber-1][0]))
+                self.musicQueueList[channelNumber-1].pop(0)
 
 class Game():
 
@@ -42,6 +49,7 @@ class Game():
         self.turn = 0
 
         self.is_running = True
+        self.is_pausing = False
         self.is_playing = False
         self.is_option = False
 
@@ -53,11 +61,24 @@ class Game():
         self.cible_size_x, self.cible_size_y = self.cible_image.get_size()
         self.cible_rect = self.cible_image.get_rect()
 
+        # pause
+        self.homeButton = pygame.image.load("assets/quit.png")
+        size_x, size_y = self.homeButton.get_size()
+        width_the_button_has_to_be = 300
+        size_y = size_y / (size_x / width_the_button_has_to_be)
+        size_x = size_x / (size_x / width_the_button_has_to_be)
+        self.homeButton = pygame.transform.smoothscale(self.homeButton, (size_x, size_y))
+        self.homeButtonRect = self.homeButton.get_rect()
+        self.homeButtonRect.x = round(self.screen.get_width() / 2 - size_x / 2)
+        self.homeButtonRect.y = round(self.screen.get_height() * 0.9 - size_y)
+
     def initialisation(self):
         self.player_board = Board(self)  # crée le plateau du joueur
         self.computer_board = Board(self)  # crée le plateau de l'ordi
         self.player_board.size = self.option.options["sizeBoard"]["value"]
+        self.player_board.maxBoat = self.option.options["numberBoat"]["value"]
         self.computer_board.size = self.option.options["sizeBoard"]["value"]
+        self.computer_board.maxBoat = self.option.options["numberBoat"]["value"]
         print(self.option.options["sizeBoard"]["value"])
         self.player_board.initialization()
         self.computer_board.initialization()
@@ -65,7 +86,6 @@ class Game():
         self.computer = Computer(self)
         self.computer.putBoat(self.computer_board)
         self.computer_board.name = "computer"
-        print("Nombre de bateaux Ordinateur :", str(len(self.computer_board.all_boats)))
 
         self.all_Tiles = self.player_board.all_tiles  # pas super utile mais existe
 
@@ -83,9 +103,19 @@ class Game():
         if event.type == pygame.KEYUP:  # Si touche relaché
             if event.key == pygame.K_j:  # si la touche est j
                 self.switch_Board()  # appelle la fonction switch_Board
+            elif event.key == pygame.K_ESCAPE:
+                if self.is_pausing:
+                    self.is_pausing = False
+                else:
+                    self.is_pausing = True
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            if self.status == "hit":
+            if self.status == "hit" and not pygame.mixer.Channel(2).get_busy() and not self.is_pausing:
                 self.hitCase(event.pos, self.player_board, self.computer_board, "player")
+            elif self.is_pausing:
+                if self.homeButtonRect.collidepoint(event.pos):
+                    self.is_pausing = False
+                    self.is_playing = False
+                    self.emptying()
 
 
         if len(self.player_board.all_boats) == self.player_board.maxBoat and not self.ui.is_positioning and self.status == "positionning":
@@ -111,21 +141,21 @@ class Game():
     def hitCase(self, mousePos, selfBoard, hittingBoard, tag):
         for tile in hittingBoard.all_tiles:
             if tile.rect.collidepoint(mousePos):
-
-                pygame.mixer.Channel(2).play(self.sound.fuseBomb)
-                pygame.mixer.Channel(2).play(self.sound.lightBomb)
+                if tag == "player":
+                    self.sound.musicQueueList[1].append(self.sound.lightBomb)
+                    self.sound.musicQueueList[1].append(self.sound.fuseBomb)
                 if tile.is_boat_on:
                     image = selfBoard.gridHitImage
                     status = 2
                     hittingBoard.life -= 1
                     print(hittingBoard.name,"got hit, life :", str(hittingBoard.life))
                     if tag == "player":
-                        pygame.mixer.Channel(3).play(self.sound.bomb)
+                        self.sound.musicQueueList[1].append(self.sound.bomb)
                 else:
                     status = 1
                     image = selfBoard.gridFlopImage
                     if tag == "player":
-                        pygame.mixer.Channel(3).play(self.sound.flop)
+                        self.sound.musicQueueList[1].append(self.sound.flop)
 
 
                 if tile.is_cross_on:
@@ -179,6 +209,9 @@ class Game():
                 screen.blit(e.image, e.rect)
             for e in self.computer_board.all_boats:
                 screen.blit(e.image, e.rect)
+
+        if self.is_pausing:
+            screen.blit(self.homeButton, self.homeButtonRect)
 
         if self.status == "hit":
 

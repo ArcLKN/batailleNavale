@@ -70,6 +70,11 @@ pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Menu.mp3"))
 
 while is_running:  # tant que la boucle est vraie le jeu continue
 
+    game.sound.mixing(1)
+    game.sound.mixing(2)
+    game.sound.mixing(3)
+    game.sound.mixing(4)
+
     screen.fill(black_color)
 
     mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
@@ -106,20 +111,23 @@ while is_running:  # tant que la boucle est vraie le jeu continue
         elif event.type == pygame.MOUSEBUTTONDOWN:
         #verification pour savoir si la souris est sur le bouton start
             if play_button_rect.collidepoint(event.pos):
-                if game.is_option:
+                if not game.is_playing and not game.is_option:
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Menu jouer.wav"))
+                    game.is_option = True
+                elif game.is_option:
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Menu jouer.wav"))
+                    game.is_option = False
                     game.initialisation()
                     game.is_playing = True
-                    game.is_option = False
-                else:
-                    game.is_option = True
-
+                    game.sound.musicQueueList[0].append("SFX/Background.mp3")
 
         if game.is_playing:
-            game.ui.watching(event, mouse_x, mouse_y, "button")  # appelle la fonction watching depuis ui passant par game
-            game.ui.watching(event, mouse_x, mouse_y, "positioning")
+            if not game.is_pausing:
+                game.ui.watching(event, mouse_x, mouse_y, "button")  # appelle la fonction watching depuis ui passant par game
+                game.ui.watching(event, mouse_x, mouse_y, "positioning")
             game.watching(event)
         elif game.is_option:
-            game.option.watching(event, pygame.mouse.get_pos())
+            game.option.watching(event)
 
     if not game.is_running:
         is_running = False
