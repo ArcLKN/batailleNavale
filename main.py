@@ -33,6 +33,7 @@ cursor_rect = cursor.get_rect()
 display_w = pygame.display.Info().current_w  # Valeur de la largeur
 display_h = pygame.display.Info().current_h  # Valeur de la hauteur
 resolution = [display_w,display_h-72]  # pour faciliter l'utilisation
+print(resolution)
 #print(f"width = {resolution[0]}, height = {resolution[1]}")  # affiche les valeurs (pour le debugging)
 screen = pygame.display.set_mode((resolution[0], resolution[1]))  # Redimension écran
 offset_x = 100

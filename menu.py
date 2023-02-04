@@ -29,9 +29,20 @@ class Option:
         # texte
         self.optionFont = pygame.font.SysFont('Comic Sans MS', 30)
         # images
+        self.option_banner = pygame.image.load('assets/optionBackground.jpg')
+        self.option_banner_rect = self.option_banner.get_rect()
+
         self.rightArrowImage = pygame.image.load("assets/Arrow.png")
         self.rightArrowImage = pygame.transform.smoothscale(self.rightArrowImage, (50, 50))
         self.leftArrowImage = pygame.transform.flip(self.rightArrowImage, True, False)
+
+        self.returnImage = pygame.image.load("assets/return.png")
+        self.returnImageHover = pygame.transform.smoothscale(self.returnImage,
+                                                        self.game.ratio(self.returnImage.get_size(), 80))
+        self.returnImage = pygame.transform.smoothscale(self.returnImage, self.game.ratio(self.returnImage.get_size(), 70))
+        self.returnRect = self.returnImage.get_rect()
+        self.returnRect.x = self.game.resolution[0] - 110
+        self.returnRect.y = 40
         # sons
         self.arrowSound = pygame.mixer.Sound("SFX/Next.wav")
         self.arrowSound.set_volume(0.2)
@@ -77,7 +88,7 @@ class Option:
     def watching(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for arrow in self.allArrow:
-                if arrow.rect.collidepoint(pygame.mouse.get_pos()):
+                if arrow.rect.collidepoint(event.pos):
                     pygame.mixer.Channel(2).play(self.arrowSound)
                     for txt in self.allText:
                         if txt.tag == arrow.tag and txt.value == "int":
@@ -101,9 +112,20 @@ class Option:
                                 self.options[txt.tag]["value"] += 1
                             txt.text = self.options[txt.tag]["value"]
                             return
+            if self.returnRect.collidepoint(event.pos):
+                if self.game.is_option:
+                    pygame.mixer.Channel(2).play(self.game.sound.pauseMenuClose)
+                    self.game.is_option = False
+
 
     def update(self, mouse_x, mouse_y):
         self.game.screen.fill([0, 0, 0])  # remplit l'écran avec la couleur -> black_color [0, 0, 0]
+        self.game.screen.blit(self.option_banner, self.option_banner_rect)
+
+        if self.returnRect.collidepoint((mouse_x, mouse_y)):
+            self.game.screen.blit(self.returnImageHover, self.returnRect)
+        else:
+            self.game.screen.blit(self.returnImage, self.returnRect)
 
         for e in self.allArrow:
             if e.rect.collidepoint((mouse_x, mouse_y)):

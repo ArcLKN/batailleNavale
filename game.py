@@ -79,6 +79,10 @@ class Game():
         self.homeButtonRect.x = round(self.screen.get_width() / 2 - size_x / 2)
         self.homeButtonRect.y = round(self.screen.get_height() * 0.9 - size_y)
 
+    def ratio(self, size_u_have, size_u_want):
+        theRatio = size_u_want / max(size_u_have[0], size_u_have[1])
+        return [round(theRatio * size_u_have[0]), round(theRatio * size_u_have[1])]
+
     def initialisation(self):
         self.player_board = Board(self)  # crée le plateau du joueur
         self.computer_board = Board(self)  # crée le plateau de l'ordi
