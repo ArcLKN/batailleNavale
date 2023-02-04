@@ -43,6 +43,7 @@ class Game():
         self.screen = screen  # pas super utile mais existe
         self.resolution = resolution  # pas super utile mais existe
 
+        self.computer = Computer(self)
         self.boat = Boat()
         self.board = Board(self)
         self.sound = Sound()
@@ -90,7 +91,6 @@ class Game():
         self.computer_board.initialization()
 
         self.computer = Computer(self)
-        self.computer.putBoat(self.computer_board)
         self.computer_board.name = "computer"
 
         self.all_Tiles = self.player_board.all_tiles  # pas super utile mais existe
@@ -105,22 +105,38 @@ class Game():
         self.computer_board.all_tiles.empty()
         self.status = "positionning"
 
+# fonction qui regarde en permanence les évènements qui se déroulent au sein du jeu et agis en conséquence
     def watching(self, event):
-        if event.type == pygame.KEYUP:  # Si touche relaché
+        # Si une touche est relachée
+        if event.type == pygame.KEYUP:
             if event.key == pygame.K_j:  # si la touche est j
-                self.switch_Board()  # appelle la fonction switch_Board
+                self.switch_Board()  # Appelle la fonction switch_Board -> Permet de changer l'affichage des plateaux.
+            # Si la touche 'échap" est relâchée -> Permet de faire appel au menu pause.
             elif event.key == pygame.K_ESCAPE:
+                # Si le menu pause est déjà activé le ferme.
                 if self.is_pausing:
                     self.is_pausing = False
                     pygame.mixer.Channel(2).play(self.sound.pauseMenuClose)
+                # Sinon l'ouvre.
                 else:
                     self.is_pausing = True
                     pygame.mixer.Channel(2).play(self.sound.pauseMenuOpen)
+            elif event.key == pygame.K_t:
+                if self.status == "waiting":
+                    self.status = "hit"
+        # Si le bouton gauche de la souris est relâché
         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            # Si le status du jeu est en mode "hit" (pour que le joueur puisse tirer sur une case)
+            # et qu'il n'y a pas déjà un tir d'effectué (en vérifiant si un son de tir est en train d'être joué)
+            # et que le jeu n'est pas en pause
+            # alors appelle la fonction qui permet de tirer
             if self.status == "hit" and not pygame.mixer.Channel(2).get_busy() and not self.is_pausing:
                 self.hitCase(event.pos, self.player_board, self.computer_board, "player")
+            # si le jeu est en pause, vérifie si le joueur clique sur l'un des boutons du menu pause
             elif self.is_pausing:
+                # Vérifie la colision entre le bouton et le pointeur de la souris.
                 if self.homeButtonRect.collidepoint(event.pos):
+                    # Arrête toutes les musiques qui sont en train d'être jouées
                     pygame.mixer.Channel(2).stop()
                     pygame.mixer.Channel(1).fadeout(10)
                     self.sound.musicQueueList = [[], [], [], []]
@@ -130,22 +146,26 @@ class Game():
                     self.emptying()
                     pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Menu.mp3"))
 
-
+        # Vérifie si le joueur a placé tous ses bateaux pour le mettre en mode "tir".
         if len(self.player_board.all_boats) == self.player_board.maxBoat and not self.ui.is_positioning and self.status == "positionning":
+            # Positionne les bateaux de l'ordinateur en fonction des bateaux posés par l'utilisateur.
+            self.computer.putBoat(self.computer_board)
+            # Passe le jeu en mode "jeu" pour changer les actions et ce qui doit être affiché par le jeu.
             self.status = "playing"
             self.timer = 60
+        # petit cooldown pour éviter certains bugs
         elif self.status == "playing":
             self.timer -= 1
             if self.timer == 0:
-                self.status = random.choice(["hit", "computerHit"])
+                self.status = random.choice(["waiting", "computerHit"])
         if self.status == "computerHit":
-            tileSize = round((self.resolution[1] - 48) / self.computer_board.size)
+            tileSize = round(((self.resolution[1] - self.resolution[3])- 48) / self.computer_board.size)
             rangeX = (self.resolution[0] / 2 - self.computer_board.size * tileSize / 2)
             x = random.randint(rangeX, rangeX + tileSize * (self.computer_board.size - 1))
             y = random.randint(0, tileSize * (self.computer_board.size - 1))
             result = self.hitCase((x, y), self.computer_board, self.player_board, "computer")
             while not result:
-                tileSize = round((self.resolution[1] - 48) / self.computer_board.size)
+                tileSize = round(((self.resolution[1] - self.resolution[3]) - 48) / self.computer_board.size)
                 rangeX = (self.resolution[0] / 2 - self.computer_board.size * tileSize / 2)
                 x = random.randint(rangeX, rangeX + tileSize * (self.computer_board.size - 1))
                 y = random.randint(0, tileSize * (self.computer_board.size - 1))
@@ -176,15 +196,14 @@ class Game():
                 cross = Cross(status, image)
                 cross.rect = image.get_rect()
                 cross.rect.x = tile.coordonnee[0] * selfBoard.tileSize + (self.resolution[0] / 2 - selfBoard.size * selfBoard.tileSize / 2)
-                cross.rect.y = tile.coordonnee[1] * selfBoard.tileSize
+                cross.rect.y = tile.coordonnee[1] * selfBoard.tileSize + (self.resolution[3] / 2)
                 cross.tag = tag
                 selfBoard.allCross.add(cross)
                 if self.status == "hit":
-                    #print("Player Hit")
                     self.status = "computerHit"
                 else:
                     #print("Computer Hit at :", str(mousePos))
-                    self.status = "hit"
+                    self.status = "waiting"
                 if self.player_board.life == 0:
                     print("L'ordinateur a gagné !")
                     self.emptying()
@@ -210,22 +229,31 @@ class Game():
 
         #  affiche chaque entité de chaque groupe
         for e in self.ui.all_buttons:
-            screen.blit(e.image, e.rect)
+            if e.name in ["Airport", "Battleship", "Ship"]:
+                if self.status == "positionning":
+                    screen.blit(e.image, e.rect)
+            elif e.name == "Hit":
+                if self.status == "waiting":
+                    screen.blit(e.image, e.rect)
         if self.stateBoard == "player":
             for e in self.all_Tiles:
                 screen.blit(e.image, e.rect)
             for e in self.player_board.all_boats:
                 screen.blit(e.image, e.rect)
+            for e in self.player_board.allLetters:
+                screen.blit(e.text_surface, e.rect)
         elif self.stateBoard == "computer":
             for e in self.computer_board.all_tiles:
                 screen.blit(e.image, e.rect)
             for e in self.computer_board.all_boats:
                 screen.blit(e.image, e.rect)
+            for e in self.computer_board.allLetters:
+                screen.blit(e.text_surface, e.rect)
 
         if self.is_pausing:
             screen.blit(self.homeButton, self.homeButtonRect)
 
-        if self.status == "hit":
+        if self.status in ["waiting", "hit"]:
 
             if self.stateBoard == "player":
                 for e in self.player_board.allCross:
@@ -236,6 +264,7 @@ class Game():
                     if e.status > 0:
                         screen.blit(e.image, e.rect)
 
+        if self.status == "hit":
             mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
             self.cible_rect.x = mouse_x - self.cible_size_x / 2
             self.cible_rect.y = mouse_y - self.cible_size_y / 2

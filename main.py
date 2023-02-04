@@ -35,6 +35,10 @@ display_h = pygame.display.Info().current_h  # Valeur de la hauteur
 resolution = [display_w,display_h-72]  # pour faciliter l'utilisation
 #print(f"width = {resolution[0]}, height = {resolution[1]}")  # affiche les valeurs (pour le debugging)
 screen = pygame.display.set_mode((resolution[0], resolution[1]))  # Redimension écran
+offset_x = 100
+offset_y = 200
+resolution.append(offset_x)
+resolution.append(offset_y)
 
 #générer la fenêtre de notre jeu
 pygame.display.set_caption("Bataille Navale")
@@ -56,9 +60,13 @@ width_the_button_has_to_be = 300
 size_y = size_y/(size_x/width_the_button_has_to_be)
 size_x = size_x/(size_x/width_the_button_has_to_be)
 play_button = pygame.transform.scale(play_button, (size_x, size_y))
+play_button_hover = pygame.transform.scale(play_button, (size_x*1.1, size_y*1.1))
 play_button_rect = play_button.get_rect()
 play_button_rect.x = round(screen.get_width()/2-size_x/2)
 play_button_rect.y = round(screen.get_height()*0.9-size_y)
+play_button_hover_rect = play_button_hover.get_rect()
+play_button_hover_rect.x = round(screen.get_width()/2-size_x*1.1/2)
+play_button_hover_rect.y = round(screen.get_height()*0.9-size_y*1.1)
 
 game = Game(resolution, screen)  # pour appeler les différentes fonctions situées dans la classe Game
 
@@ -75,17 +83,11 @@ while is_running:  # tant que la boucle est vraie le jeu continue
     game.sound.mixing(3)
     game.sound.mixing(4)
 
-    screen.fill(black_color)
-
     mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
 
-    posText = ("x: "+str(mouse_x)+", y: "+str(mouse_y))
-    text_surface = my_font.render(posText, False, white_color)
+    screen.fill(black_color)
 
-    screen.blit(text_surface, (mouse_x+20, mouse_y))
-    cursor_rect.x = mouse_x
-    cursor_rect.y = mouse_y
-    screen.blit(cursor, cursor_rect)
+
 
     #apliquer l'arrière plan de notre jeu
     screen.blit(background, (0,0))
@@ -95,13 +97,19 @@ while is_running:  # tant que la boucle est vraie le jeu continue
         #declencher les instruction de la partie
         game.update(screen)
     elif game.is_option:
-        game.option.update()
-        screen.blit(play_button, play_button_rect)
+        game.option.update(mouse_x, mouse_y)
+        if play_button_rect.collidepoint((mouse_x, mouse_y)):
+            screen.blit(play_button_hover, play_button_hover_rect)
+        else:
+            screen.blit(play_button, play_button_rect)
     #verifier si notre jeu n'a pas commencé
     else:
         #ajouter mon ecran de bienvenue
         screen.blit(banner, banner_rect)
-        screen.blit(play_button, play_button_rect)
+        if play_button_rect.collidepoint((mouse_x, mouse_y)):
+            screen.blit(play_button_hover, play_button_hover_rect)
+        else:
+            screen.blit(play_button, play_button_rect)
 
     # Si on appuie sur le bouton fermer de la fenêtre, quitte le jeu.
     for event in pygame.event.get():  # Pour chaque évènement inclu dans la librairie pygame
@@ -132,6 +140,14 @@ while is_running:  # tant que la boucle est vraie le jeu continue
 
     if not game.is_running:
         is_running = False
+
+    # Affichage curseur et coordonnées
+    posText = ("x: "+str(mouse_x)+", y: "+str(mouse_y))
+    text_surface = my_font.render(posText, False, white_color)
+    screen.blit(text_surface, (mouse_x+20, mouse_y))
+    cursor_rect.x = mouse_x
+    cursor_rect.y = mouse_y
+    screen.blit(cursor, cursor_rect)
 
     pygame.display.flip()  # Actualise l'écran
 

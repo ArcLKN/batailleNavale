@@ -58,6 +58,16 @@ class Cross(pygame.sprite.Sprite):
         self.rect.x = 0
         self.rect.y = 0
 
+class Letter(pygame.sprite.Sprite):
+    def __init__(self, font, value):
+        super(Letter, self).__init__()
+        self.font = font
+        self.color = [255, 255, 255]
+        self.value = value
+        self.axis = str()
+        self.rect = [0, 0]
+        self.text_surface = self.font.render(str(self.value), False, self.color)
+
 
 # Une class Plateau
 # avec un nom pour savoir si c'est le plateau du joueur ou bien de l'ordinateur
@@ -83,24 +93,42 @@ class Board(pygame.sprite.Sprite):
         self.maxBoat = 3  # définit le nombre maximum de bateau qu'il peut y avoir sur le plateau
         self.all_tiles = pygame.sprite.Group()
         self.all_boats = pygame.sprite.Group()
+        self.allLetters = pygame.sprite.Group()
         self.life = 0
 
 # crée les cases du plateau
     def initialization(self):
-        self.tileSize = round((self.game.resolution[1] - 48) / self.size)
+        self.tileSize = round((self.game.resolution[1] - self.game.resolution[3]) / self.size)
         self.gridHitImage = pygame.transform.smoothscale(self.gridHitImage, (self.tileSize, self.tileSize))
         self.gridFlopImage = pygame.transform.smoothscale(self.gridFlopImage, (self.tileSize, self.tileSize))
 
-        for y in range(0, self.size):
-            for i in range(0, self.size):
+        font = pygame.font.SysFont('Comic Sans MS', round(self.tileSize / 2))
+        alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
 
+        for y in range(0, self.size):
+
+            # créations des lettres sur les côtés
+            letter = Letter(font, str(y+1))
+            letter.axis = "y"
+            letter.rect[0] = 0 * self.tileSize + (self.game.resolution[0] / 2 - self.size * self.tileSize / 2)
+            letter.rect[0] -= (self.tileSize + len(str(y+1))*7)  # pour l'écarter un peu du terrain
+            letter.rect[1] = y * self.tileSize + self.game.resolution[3] / 2
+            self.allLetters.add(letter)
+            # créations des lettres sur les côtés bis
+            letter = Letter(font, alphabet[y])
+            letter.axis = "x"
+            letter.rect[0] = y * self.tileSize + (self.game.resolution[0] / 2 - self.size * self.tileSize / 2) + self.tileSize / 2
+            letter.rect[1] = self.game.resolution[3] / 2 - self.tileSize
+            self.allLetters.add(letter)
+
+            for i in range(0, self.size):
                 # calcule la couleur de la case (inutile tbh)
                 color = [0, 0, 255]
                 calcul = min(((self.size-1)/2 - abs(y - (self.size-1)/2)), ((self.size-1)/2 - abs(i - (self.size-1)/2)))
                 color[2] = color[2] - (min(150, self.size*5)/self.size) * calcul * 2.5
 
                 x = i * self.tileSize + (self.game.resolution[0] / 2 - self.size * self.tileSize / 2)
-                tile = Tile(x, y * self.tileSize, self.tileSize, color)
+                tile = Tile(x, y * self.tileSize + self.game.resolution[3] / 2, self.tileSize, color)
                 tile.coordonnee = [i, y]
                 tile.image = pygame.image.load(random.choice(self.tileImages))
                 tile.image = pygame.transform.smoothscale(tile.image, (self.tileSize, self.tileSize))

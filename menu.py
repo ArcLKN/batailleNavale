@@ -5,9 +5,11 @@ class Arrow(pygame.sprite.Sprite):
     def __init__(self, image, tag):
         super(Arrow, self).__init__()
         self.image = image
+        self.hover_image = pygame.transform.smoothscale(self.image, (round(self.image.get_size()[0]*1.1), round(self.image.get_size()[1]*1.1)))
         self.tag = tag
         self.orientation = str()
         self.rect = self.image.get_rect()
+        self.hover_rect = self.rect
 
 class Text(pygame.sprite.Sprite):
     def __init__(self, font, text, tag):
@@ -40,11 +42,11 @@ class Option:
         self.options = {
             "sizeBoard": {
                 "value": 10,
-                "name": "Size Board"
+                "name": "Taille plateau"
             },
             "numberBoat": {
                 "value": 3,
-                "name": "Number of Boat"
+                "name": "Nombre de bateaux"
             }
         }
         # appel fonction
@@ -56,7 +58,7 @@ class Option:
         for option in self.options:
             print(option)
             optionTitle = Text(self.optionFont, self.options[option]["name"], tag=option)
-            optionTitle.rect = (250 + 500 * round(x/5), 160 + (x * 200))
+            optionTitle.rect = (200 + 500 * round(x/5), 140 + (x * 200))
             optionValue = Text(self.optionFont, self.options[option]["value"], tag=option)
             optionValue.rect = (300 + 500 * round(x/5), 200 + (x * 200))
             optionValue.value = "int"
@@ -100,11 +102,14 @@ class Option:
                             txt.text = self.options[txt.tag]["value"]
                             return
 
-    def update(self):
+    def update(self, mouse_x, mouse_y):
         self.game.screen.fill([0, 0, 0])  # remplit l'écran avec la couleur -> black_color [0, 0, 0]
 
         for e in self.allArrow:
-            self.game.screen.blit(e.image, e.rect)
+            if e.rect.collidepoint((mouse_x, mouse_y)):
+                self.game.screen.blit(e.hover_image, e.rect)
+            else:
+                self.game.screen.blit(e.image, e.rect)
         for e in self.allText:
             text_surface = e.font.render(str(e.text), False, [255, 255, 255])
             self.game.screen.blit(text_surface, e.rect)
