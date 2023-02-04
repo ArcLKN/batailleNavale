@@ -58,10 +58,10 @@ class UI(pygame.sprite.Sprite):
         else:
             range = round(self.game.resolution[0] / 2 - self.game.computer_board.size * self.game.computer_board.tileSize / 2)
             boat.rect.x = randint(range, range + self.game.computer_board.tileSize * (self.game.computer_board.size-1))
-            boat.rect.y = randint(0, self.game.computer_board.tileSize * (self.game.computer_board.size)-1) + self.game.resolution[3] / 2
+            boat.rect.y = randint(self.game.resolution[3] / 2, self.game.computer_board.tileSize * (self.game.computer_board.size)-1) + self.game.resolution[3] / 2
             print(boat.rect.x, boat.rect.y)
             board.all_boats.add(boat)
-            self.checkPlacementBoat(boat, board)
+            return self.checkPlacementBoat(boat, board)
 
 
 
@@ -85,7 +85,7 @@ class UI(pygame.sprite.Sprite):
         for tile in board.all_tiles:  # pour chaque case du plateau
             if tile.rect.collidepoint(e.rect.x, e.rect.y):  # si la souris est sur la case
                 is_placeable = True  # par défaut c'est bon
-                # vérifie qu'il y assez de case pour mettre le bateau
+                # vérifie qu'il y ai assez de case pour mettre le bateau
                 if board.size - tile.coordonnee[0] >= e.width and board.size - tile.coordonnee[1] >= e.height:
                     for t2 in board.all_tiles:  # pour chaque case du plateau
                         # si la case est sur la meme ligne que celle choisie
@@ -99,6 +99,7 @@ class UI(pygame.sprite.Sprite):
                                     self.is_positioning = False
                                     # arrête de regarder pour les autres cases
                                     # parce que si une case est mauvaise tout le reste est mauvais.
+                                    print("THERE 1")
                                     return False
                         # pour les ordonnées
                         if t2.coordonnee[0] == tile.coordonnee[0]:
@@ -110,11 +111,13 @@ class UI(pygame.sprite.Sprite):
                                     self.is_positioning = False
                                     # arrête de regarder pour les autres cases
                                     # parce que si une case est mauvaise tout le reste est mauvais.
+                                    print("THERE 2")
                                     return False
                 else:  # s'il n'y a pas assez de case, empêche qu'un bateau soit posé
                     self.is_positioning = False
                     e.kill()
-                    return  # arrête de regarder les autres cases
+                    print("THERE 3")
+                    return False # arrête de regarder les autres cases
                 if is_placeable:  # si le bateau n'est pas pas placable (donc est placable)
                     for t2 in board.all_tiles:  # pour chaque case où est le bateau
                         if t2.coordonnee[1] == tile.coordonnee[1]:
@@ -138,6 +141,8 @@ class UI(pygame.sprite.Sprite):
                     if board.name == "player":
                         pygame.mixer.Channel(3).play(self.game.sound.putboat)
                     return True
+        return False
+
 
     # vérifie chaque action en rapport avec des inputs de l'utilisateur
     def watching(self, event, mouse_x, mouse_y, check):
