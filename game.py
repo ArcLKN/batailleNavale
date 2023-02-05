@@ -1,10 +1,12 @@
-import random
+import json
+import os
 import pygame.sprite
-
-from board import Board, Boat, Cross
+import random
 from UI import UI
+from board import Board, Boat, Cross
 from computer import Computer
 from menu import Option
+from save import Save
 
 black_color = [0, 0, 0]  # pas super utile mais existe
 
@@ -48,6 +50,7 @@ class Game():
         self.board = Board(self)
         self.sound = Sound()
         self.option = Option(self)
+        self.save = Save()
 
         self.ui = UI(self)
         self.stateBoard = "player"
@@ -79,6 +82,171 @@ class Game():
         self.homeButtonRect.x = round(self.screen.get_width() / 2 - size_x / 2)
         self.homeButtonRect.y = round(self.screen.get_height() * 0.9 - size_y)
 
+    def saving(self):
+        data = self.save.create_files(os.getcwd())
+        data["Computer"] = {
+            "Crosses": [],
+            "Boats": [],
+            "size": self.computer_board.size,
+            "life": self.computer_board.life
+        }
+        data["Player"] = {
+            "Crosses": [],
+            "Boats": [],
+            "size": self.computer_board.size,
+            "life": self.computer_board.life
+        }
+
+        for cross in self.computer_board.allCross:
+            data["Computer"]["Crosses"].append(
+                {
+                    "x": cross.rect.x,
+                    "y": cross.rect.y,
+                    "tag": "player",
+                    "status": cross.status
+                }
+            )
+        for boat in self.computer_board.all_boats:
+            data["Computer"]["Boats"].append(
+                {
+                    "name": boat.name,
+                    "x": boat.rect.x,
+                    "y": boat.rect.y,
+                    "size_x": boat.size_x,
+                    "size_y": boat.size_y,
+                    "width": boat.width,
+                    "height": boat.height,
+                    "rotation": boat.rotation,
+                    "positioning": boat.positioning,
+                    "user": boat.user,
+                    "is_touched": boat.is_touched,
+                    "coordonnee": boat.coordonnee
+                }
+            )
+        for cross in self.player_board.allCross:
+            data["Player"]["Crosses"].append(
+                {
+                    "x": cross.rect.x,
+                    "y": cross.rect.y,
+                    "tag": "player",
+                    "status": cross.status
+                }
+            )
+        for boat in self.player_board.all_boats:
+            data["Player"]["Boats"].append(
+                {
+                    "name": boat.name,
+                    "x": boat.rect.x,
+                    "y": boat.rect.y,
+                    "size_x": boat.size_x,
+                    "size_y": boat.size_y,
+                    "width": boat.width,
+                    "height": boat.height,
+                    "rotation": boat.rotation,
+                    "positioning": boat.positioning,
+                    "user": boat.user,
+                    "is_touched": boat.is_touched,
+                    "coordonnee": boat.coordonnee
+                }
+            )
+        self.save.save_data(data)
+
+    def loading(self):
+        data = self.save.load_data(os.getcwd())
+        self.player_board = Board(self)  # crée le plateau du joueur
+        self.computer_board = Board(self)  # crée le plateau de l'ordi
+        self.player_board.size = data["Player"]["size"]
+        self.player_board.life = data["Player"]["life"]
+        self.computer_board.size = data["Computer"]["size"]
+        self.computer_board.life = data["Computer"]["life"]
+        self.player_board.initialization()
+        self.computer_board.initialization()
+        for e in data["Player"]["Boats"]:
+            boat = Boat()
+            boat.size_x = e['size_x']
+            boat.size_y = e['size_y']
+            boat.width = e['width']
+            boat.height = e['height']
+            boat.rotation = e['rotation']
+            boat.positioning = e['positioning']
+            boat.user = e['user']
+            boat.is_touched = e['is_touched']
+            boat.coordonnee = e['coordonnee']
+            boat.name = e["name"]
+            print(boat.name)
+            if boat.name == "Airport":
+                color = [30, 30, 90]
+                boat.width = 4
+            elif boat.name == "Battleship":
+                color = [30, 30, 70]
+                boat.width = 3
+            else:
+                color = [30, 30, 50]
+                boat.width = 2
+            print(color)
+            boat.image = pygame.Surface([boat.size_x, boat.size_y])
+            boat.rect = pygame.draw.rect(boat.image,  # image
+                                                     color,  # color
+                                                     pygame.Rect(0, 0, boat.size_x, boat.size_y))
+            boat.rect.x = e['x']
+            boat.rect.y = e['y']
+            self.player_board.all_boats.add(boat)
+        for e in data["Player"]["Crosses"]:
+            cross = Cross(e['status'], self.computer_board.gridFlopImage)
+            cross.tag = e['tag']
+            cross.status = e['status']
+            if cross.status == 2:
+                cross.image = self.player_board.gridHitImage
+            elif cross.status == 1:
+                cross.image = self.player_board.gridFlopImage
+            cross.rect = cross.image.get_rect()
+            cross.rect.x = e['x']
+            cross.rect.y = e['y']
+            self.player_board.allCross.add(cross)
+
+        for e in data["Computer"]["Boats"]:
+            boat = Boat()
+            boat.size_x = e['size_x']
+            boat.size_y = e['size_y']
+            boat.width = e['width']
+            boat.height = e['height']
+            boat.rotation = e['rotation']
+            boat.positioning = e['positioning']
+            boat.user = e['user']
+            boat.is_touched = e['is_touched']
+            boat.coordonnee = e['coordonnee']
+            boat.name = e["name"]
+            print(boat.name)
+            if boat.name == "Airport":
+                color = [30, 30, 90]
+                boat.width = 4
+            elif boat.name == "Battleship":
+                color = [30, 30, 70]
+                boat.width = 3
+            else:
+                color = [30, 30, 50]
+                boat.width = 2
+            print(color)
+            boat.image = pygame.Surface([boat.size_x, boat.size_y])
+            boat.rect = pygame.draw.rect(boat.image,  # image
+                                                     color,  # color
+                                                     pygame.Rect(0, 0, boat.size_x, boat.size_y))
+            boat.rect.x = e['x']
+            boat.rect.y = e['y']
+            self.computer_board.all_boats.add(boat)
+
+        for e in data["Computer"]["Crosses"]:
+            cross = Cross(e['status'], self.computer_board.gridFlopImage)
+            cross.tag = e['tag']
+            if cross.status == 2:
+                cross.image = self.computer_board.gridHitImage
+            elif cross.status == 1:
+                cross.image = self.computer_board.gridFlopImage
+            cross.rect = cross.image.get_rect()
+            cross.rect.x = e['x']
+            cross.rect.y = e['y']
+            self.computer_board.allCross.add(cross)
+
     def ratio(self, size_u_have, size_u_want):
         theRatio = size_u_want / max(size_u_have[0], size_u_have[1])
         return [round(theRatio * size_u_have[0]), round(theRatio * size_u_have[1])]
@@ -97,10 +265,7 @@ class Game():
         self.computer = Computer(self)
         self.computer_board.name = "computer"
 
-        self.all_Tiles = self.player_board.all_tiles  # pas super utile mais existe
-
     def emptying(self):
-        self.all_Tiles.empty()
         self.player_board.all_boats.empty()
         self.player_board.allCross.empty()
         self.player_board.all_tiles.empty()
@@ -240,7 +405,7 @@ class Game():
                 if self.status == "waiting":
                     screen.blit(e.image, e.rect)
         if self.stateBoard == "player":
-            for e in self.all_Tiles:
+            for e in self.player_board.all_tiles:
                 screen.blit(e.image, e.rect)
             for e in self.player_board.all_boats:
                 screen.blit(e.image, e.rect)

@@ -48,6 +48,7 @@ class UI(pygame.sprite.Sprite):
         boat.rect = boat.rect = pygame.draw.rect(boat.image,  # image
                                                  color,  # color
                                                  pygame.Rect(0, 0, boat.size_x, boat.size_y))
+        boat.name = name
         if user == "player":
             mouse_x, mouse_y = pygame.mouse.get_pos()
             boat.rect.x = mouse_x

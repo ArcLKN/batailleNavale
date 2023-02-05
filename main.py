@@ -1,5 +1,6 @@
 # coding: utf8
 import pygame  # importation des différents modules
+import os
 #pygame.mixer.init(frequency=44000, size=16, channels=3, buffer=4096, devicename=None )
 from game import Game  # Importation de game.py
 
@@ -56,6 +57,8 @@ banner_rect.x = round(screen.get_width()/2.6)
 
 #importer charger notre bouton pour lancer la partie
 play_button = pygame.image.load('assets/start.png')
+continue_button = pygame.image.load('assets/continue.png')
+
 size_x, size_y = play_button.get_size()
 width_the_button_has_to_be = 300
 size_y = size_y/(size_x/width_the_button_has_to_be)
@@ -68,6 +71,15 @@ play_button_rect.y = round(screen.get_height()*0.9-size_y)
 play_button_hover_rect = play_button_hover.get_rect()
 play_button_hover_rect.x = round(screen.get_width()/2-size_x*1.1/2)
 play_button_hover_rect.y = round(screen.get_height()*0.9-size_y*1.1)
+
+continue_button = pygame.transform.scale(continue_button, (size_x, size_y))
+continue_button_hover = pygame.transform.scale(continue_button, (size_x*1.1, size_y*1.1))
+continue_button_rect = continue_button.get_rect()
+continue_button_rect.x = round(screen.get_width()/2-size_x/2)
+continue_button_rect.y = round(screen.get_height()*0.75-size_y)
+continue_button_hover_rect = continue_button_hover.get_rect()
+continue_button_hover_rect.x = round(screen.get_width()/2-size_x*1.1/2)
+continue_button_hover_rect.y = round(screen.get_height()*0.75-size_y*1.1)
 
 game = Game(resolution, screen)  # pour appeler les différentes fonctions situées dans la classe Game
 
@@ -99,6 +111,7 @@ while is_running:  # tant que la boucle est vraie le jeu continue
         game.update(screen)
     elif game.is_option:
         game.option.update(mouse_x, mouse_y)
+        # effet
         if play_button_rect.collidepoint((mouse_x, mouse_y)):
             screen.blit(play_button_hover, play_button_hover_rect)
         else:
@@ -111,10 +124,18 @@ while is_running:  # tant que la boucle est vraie le jeu continue
             screen.blit(play_button_hover, play_button_hover_rect)
         else:
             screen.blit(play_button, play_button_rect)
+        if os.path.exists(rf"save.json"):
+            # effet
+            if continue_button_rect.collidepoint((mouse_x, mouse_y)):
+                screen.blit(continue_button_hover, continue_button_hover_rect)
+            else:
+                screen.blit(continue_button, continue_button_rect)
 
     # Si on appuie sur le bouton fermer de la fenêtre, quitte le jeu.
     for event in pygame.event.get():  # Pour chaque évènement inclu dans la librairie pygame
         if event.type == pygame.QUIT:  # Si l'évènement actionné par l'utilisateur est égal à celui associé à fermer la fenêtre
+            if game.is_playing:
+                game.saving()
             is_running = False
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -130,6 +151,11 @@ while is_running:  # tant que la boucle est vraie le jeu continue
                     game.initialisation()
                     game.is_playing = True
                     game.sound.musicQueueList[0].append("SFX/Background.mp3")
+            if continue_button_rect.collidepoint(event.pos):
+                if not game.is_playing and not game.is_option:
+                    game.loading()
+                    game.is_playing = True
+                    game.status = "waiting"
 
         if game.is_playing:
             if not game.is_pausing:
