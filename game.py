@@ -17,6 +17,7 @@ class Sound():
         self.returnToMenu = pygame.mixer.Sound("SFX/WW_PictoBox_Erase.wav")
         self.pauseMenuOpen = pygame.mixer.Sound("SFX/WW_PauseMenu_Open.wav")
         self.pauseMenuClose = pygame.mixer.Sound("SFX/WW_PauseMenu_Close.wav")
+        self.pauseMenuSave = pygame.mixer.Sound("SFX/WW_PauseMenu_Save.wav")
 
         self.flop = pygame.mixer.Sound("SFX/Plouf.wav")
         self.flop.set_volume(0.2)
@@ -31,6 +32,19 @@ class Sound():
 
         self.musicQueueList = [[], [], [], []]
 
+# === Fonction qui permet de s'occuper de quand un son doit être joué. ===
+
+# En gros, ca va regarder si le salon vocal rentré en paramètre est occupé (channel).
+# -> if not pygame.mixer.Channel(channelNumber).get_busy():
+# * Si le salon numéro "channelNumber" est occupé ...
+
+# Si l'un des salons vocaux n'est pas occupé alors la fonction regarde si y a des sons en attentes.
+# -> if len(self.musicQueueList[channelNumber-1]) > 0:
+# * Si la longueur de la file d'attente numéro "channelNumber" est supérieure à 0 ...
+
+# Et si c'est le cas ca va les jouer.
+# -> pygame.mixer.Channel(channelNumber).play(pygame.mixer.Sound(self.musicQueueList[channelNumber-1][0]))
+# Joue le son numéro de la file d'attente numéro "channelNumber" dans le salon vocal numéro "channelNumber".
     def mixing(self, channelNumber):
         if not pygame.mixer.Channel(channelNumber).get_busy():
             if len(self.musicQueueList[channelNumber-1]) > 0:
@@ -42,8 +56,8 @@ class Game():
     def __init__(self, resolution, screen):
         super().__init__()
 
-        self.screen = screen  # pas super utile mais existe
-        self.resolution = resolution  # pas super utile mais existe
+        self.screen = screen  # permet aux autres modules d'utiliser la variable à travers la classe Game
+        self.resolution = resolution  # permet aux autres modules d'utiliser la variable à travers la classe Game
 
         self.computer = Computer(self)
         self.boat = Boat()
@@ -71,16 +85,31 @@ class Game():
         self.cible_size_x, self.cible_size_y = self.cible_image.get_size()
         self.cible_rect = self.cible_image.get_rect()
 
-        # pause
+        # PAUSE
+        # Bouton pour retourner au menu
         self.homeButton = pygame.image.load("assets/quit.png")
         size_x, size_y = self.homeButton.get_size()
         width_the_button_has_to_be = 300
         size_y = size_y / (size_x / width_the_button_has_to_be)
         size_x = size_x / (size_x / width_the_button_has_to_be)
+        self.homeButtonHover = pygame.transform.smoothscale(self.homeButton, (size_x*1.1, size_y*1.1))
         self.homeButton = pygame.transform.smoothscale(self.homeButton, (size_x, size_y))
         self.homeButtonRect = self.homeButton.get_rect()
         self.homeButtonRect.x = round(self.screen.get_width() / 2 - size_x / 2)
         self.homeButtonRect.y = round(self.screen.get_height() * 0.9 - size_y)
+        self.homeButtonHoverRect = self.homeButtonHover.get_rect()
+        self.homeButtonHoverRect.y = round(self.screen.get_height() * 0.9 - size_y * 1.1)
+        self.homeButtonHoverRect.x = round(self.screen.get_width() / 2 - size_x * 1.1 / 2)
+        # Bouton pour sauvegarder l'état de sa partie.
+        self.saveButton = pygame.image.load("assets/save.png")
+        self.saveButtonHover = pygame.transform.smoothscale(self.saveButton, (size_x * 1.1, size_y * 1.1))
+        self.saveButton = pygame.transform.smoothscale(self.saveButton, (size_x, size_y))
+        self.saveButtonRect = self.saveButton.get_rect()
+        self.saveButtonRect.x = round(self.screen.get_width() / 2 - size_x / 2)
+        self.saveButtonRect.y = round(self.screen.get_height() * 0.75 - size_y)
+        self.saveButtonHoverRect = self.saveButtonHover.get_rect()
+        self.saveButtonHoverRect.y = round(self.screen.get_height() * 0.75 - size_y * 1.1)
+        self.saveButtonHoverRect.x = round(self.screen.get_width() / 2 - size_x * 1.1 / 2)
 
     def saving(self):
         data = self.save.create_files(os.getcwd())
@@ -173,7 +202,6 @@ class Game():
             boat.is_touched = e['is_touched']
             boat.coordonnee = e['coordonnee']
             boat.name = e["name"]
-            print(boat.name)
             if boat.name == "Airport":
                 color = [30, 30, 90]
                 boat.width = 4
@@ -183,7 +211,6 @@ class Game():
             else:
                 color = [30, 30, 50]
                 boat.width = 2
-            print(color)
             boat.image = pygame.Surface([boat.size_x, boat.size_y])
             boat.rect = pygame.draw.rect(boat.image,  # image
                                                      color,  # color
@@ -216,7 +243,6 @@ class Game():
             boat.is_touched = e['is_touched']
             boat.coordonnee = e['coordonnee']
             boat.name = e["name"]
-            print(boat.name)
             if boat.name == "Airport":
                 color = [30, 30, 90]
                 boat.width = 4
@@ -226,7 +252,6 @@ class Game():
             else:
                 color = [30, 30, 50]
                 boat.width = 2
-            print(color)
             boat.image = pygame.Surface([boat.size_x, boat.size_y])
             boat.rect = pygame.draw.rect(boat.image,  # image
                                                      color,  # color
@@ -251,6 +276,7 @@ class Game():
         theRatio = size_u_want / max(size_u_have[0], size_u_have[1])
         return [round(theRatio * size_u_have[0]), round(theRatio * size_u_have[1])]
 
+# Fonction qui permet d'initialiser le jeu (les cases, etc)
     def initialisation(self):
         self.player_board = Board(self)  # crée le plateau du joueur
         self.computer_board = Board(self)  # crée le plateau de l'ordi
@@ -258,14 +284,13 @@ class Game():
         self.player_board.maxBoat = self.option.options["numberBoat"]["value"]
         self.computer_board.size = self.option.options["sizeBoard"]["value"]
         self.computer_board.maxBoat = self.option.options["numberBoat"]["value"]
-        print(self.option.options["sizeBoard"]["value"])
         self.player_board.initialization()
         self.computer_board.initialization()
-
         self.computer = Computer(self)
         self.computer_board.name = "computer"
 
     def emptying(self):
+        # vide chaque groupe de sprite
         self.player_board.all_boats.empty()
         self.player_board.allCross.empty()
         self.player_board.all_tiles.empty()
@@ -314,6 +339,10 @@ class Game():
                     self.is_playing = False
                     self.emptying()
                     pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Menu.mp3"))
+                # Si le bouton "sauvegarder" est appuyé -> sauvegarde.
+                if self.saveButtonRect.collidepoint(event.pos):
+                    pygame.mixer.Channel(2).play(self.sound.pauseMenuSave)
+                    self.saving()
 
         # Vérifie si le joueur a placé tous ses bateaux pour le mettre en mode "tir".
         if len(self.player_board.all_boats) == self.player_board.maxBoat and not self.ui.is_positioning and self.status == "positionning":
@@ -340,14 +369,18 @@ class Game():
                 y = random.randint(0, tileSize * (self.computer_board.size - 1))
                 result = self.hitCase((x, y), self.computer_board, self.player_board, "computer")
 
+# Fonction qui gère le tir du joueur et de l'ordinateur.
+# Vérifie que le tir est effectue sur une case valide
     def hitCase(self, mousePos, selfBoard, hittingBoard, tag):
         for tile in hittingBoard.all_tiles:
             if tile.rect.collidepoint(mousePos):
                 if tile.is_cross_on:
                     return False
+                # Joue un son uniquement si le joueur tire.
                 if tag == "player":
                     self.sound.musicQueueList[1].append(self.sound.lightBomb)
                     self.sound.musicQueueList[1].append(self.sound.fuseBomb)
+                # Vérifie si un bateau est sur la case ou non.
                 if tile.is_boat_on:
                     image = selfBoard.gridHitImage
                     status = 2
@@ -361,6 +394,7 @@ class Game():
                     if tag == "player":
                         self.sound.musicQueueList[1].append(self.sound.flop)
 
+                # Crée un nouveau sprite croix.
                 tile.is_cross_on = True
                 cross = Cross(status, image)
                 cross.rect = image.get_rect()
@@ -368,11 +402,12 @@ class Game():
                 cross.rect.y = tile.coordonnee[1] * selfBoard.tileSize + (self.resolution[3] / 2)
                 cross.tag = tag
                 selfBoard.allCross.add(cross)
+                # change le tour du joueur.
                 if self.status == "hit":
                     self.status = "computerHit"
                 else:
-                    #print("Computer Hit at :", str(mousePos))
                     self.status = "waiting"
+                # Vérifie que le tir n'amène pas à la victoire du joueur ou de l'ordinateur.
                 if self.player_board.life == 0:
                     print("L'ordinateur a gagné !")
                     self.emptying()
@@ -394,7 +429,6 @@ class Game():
             self.stateBoard = "player"
 
     def update(self, screen):
-        #screen.fill(black_color)  # remplit l'écran avec la couleur -> black_color [0, 0, 0]
 
         #  affiche chaque entité de chaque groupe
         for e in self.ui.all_buttons:
@@ -402,8 +436,10 @@ class Game():
                 if self.status == "positionning":
                     screen.blit(e.image, e.rect)
             elif e.name == "Hit":
-                if self.status == "waiting":
+                if self.status in ["waiting", "hit"]:
                     screen.blit(e.image, e.rect)
+
+        # Affichage du plateau du joueur
         if self.stateBoard == "player":
             for e in self.player_board.all_tiles:
                 screen.blit(e.image, e.rect)
@@ -411,6 +447,12 @@ class Game():
                 screen.blit(e.image, e.rect)
             for e in self.player_board.allLetters:
                 screen.blit(e.text_surface, e.rect)
+            if self.status in ["waiting", "hit"]:
+                for e in self.player_board.allCross:
+                    if e.status > 0:
+                        screen.blit(e.image, e.rect)
+
+        # Affichage du plateau de l'ordinateur
         elif self.stateBoard == "computer":
             for e in self.computer_board.all_tiles:
                 screen.blit(e.image, e.rect)
@@ -418,24 +460,26 @@ class Game():
                 screen.blit(e.image, e.rect)
             for e in self.computer_board.allLetters:
                 screen.blit(e.text_surface, e.rect)
-
-        if self.is_pausing:
-            screen.blit(self.homeButton, self.homeButtonRect)
-
-        if self.status in ["waiting", "hit"]:
-
-            if self.stateBoard == "player":
-                for e in self.player_board.allCross:
-                    if e.status > 0:
-                        screen.blit(e.image, e.rect)
-            else:
+            if self.status in ["waiting", "hit"]:
                 for e in self.computer_board.allCross:
                     if e.status > 0:
                         screen.blit(e.image, e.rect)
 
+        mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
+
+        # Affichage des boutons si le jeu est en pause
+        if self.is_pausing:
+            if self.homeButtonRect.collidepoint((mouse_x, mouse_y)):
+                screen.blit(self.homeButtonHover, self.homeButtonHoverRect)
+            else:
+                screen.blit(self.homeButton, self.homeButtonRect)
+            if self.saveButtonRect.collidepoint((mouse_x, mouse_y)):
+                screen.blit(self.saveButtonHover, self.saveButtonHoverRect)
+            else:
+                screen.blit(self.saveButton, self.saveButtonRect)
+
+        # Affichage du curseur si le joueur est en train de tirer.
         if self.status == "hit":
-            mouse_x, mouse_y = pygame.mouse.get_pos()  # Obtenir la position (x, y) du curseur.
             self.cible_rect.x = mouse_x - self.cible_size_x / 2
             self.cible_rect.y = mouse_y - self.cible_size_y / 2
-
             screen.blit(self.cible_image, self.cible_rect)

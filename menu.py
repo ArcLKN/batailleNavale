@@ -67,7 +67,6 @@ class Option:
     def groupArrow(self):
         x = 0
         for option in self.options:
-            print(option)
             optionTitle = Text(self.optionFont, self.options[option]["name"], tag=option)
             optionTitle.rect = (200 + 500 * round(x/5), 140 + (x * 200))
             optionValue = Text(self.optionFont, self.options[option]["value"], tag=option)
@@ -117,7 +116,7 @@ class Option:
                     pygame.mixer.Channel(2).play(self.game.sound.pauseMenuClose)
                     self.game.is_option = False
 
-
+# Met à jour les entités de la partie option.
     def update(self, mouse_x, mouse_y):
         self.game.screen.fill([0, 0, 0])  # remplit l'écran avec la couleur -> black_color [0, 0, 0]
         self.game.screen.blit(self.option_banner, self.option_banner_rect)

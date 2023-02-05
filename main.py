@@ -134,8 +134,6 @@ while is_running:  # tant que la boucle est vraie le jeu continue
     # Si on appuie sur le bouton fermer de la fenêtre, quitte le jeu.
     for event in pygame.event.get():  # Pour chaque évènement inclu dans la librairie pygame
         if event.type == pygame.QUIT:  # Si l'évènement actionné par l'utilisateur est égal à celui associé à fermer la fenêtre
-            if game.is_playing:
-                game.saving()
             is_running = False
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -153,6 +151,7 @@ while is_running:  # tant que la boucle est vraie le jeu continue
                     game.sound.musicQueueList[0].append("SFX/Background.mp3")
             if continue_button_rect.collidepoint(event.pos):
                 if not game.is_playing and not game.is_option:
+                    pygame.mixer.Channel(2).play(pygame.mixer.Sound("SFX/WW_MainMenu_CopyErase_Start.wav"))
                     game.loading()
                     game.is_playing = True
                     game.status = "waiting"
