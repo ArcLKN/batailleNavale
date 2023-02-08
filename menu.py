@@ -27,10 +27,13 @@ class Option:
         # important
         self.game = game
         # texte
-        self.optionFont = pygame.font.SysFont('Comic Sans MS', 30)
+        self.optionFont = pygame.font.SysFont('ComicSans MS', 50)
         # images
         self.option_banner = pygame.image.load('assets/optionBackground.jpg')
         self.option_banner_rect = self.option_banner.get_rect()
+
+        self.option_banner_rect.x = 185
+        self.option_banner_rect.y = 100
 
         self.rightArrowImage = pygame.image.load("assets/Arrow.png")
         self.rightArrowImage = pygame.transform.smoothscale(self.rightArrowImage, (50, 50))
@@ -68,16 +71,16 @@ class Option:
         x = 0
         for option in self.options:
             optionTitle = Text(self.optionFont, self.options[option]["name"], tag=option)
-            optionTitle.rect = (200 + 500 * round(x/5), 140 + (x * 200))
+            optionTitle.rect = (820 + 500 * round(x/5), 250 + (x * 300)) #texte
             optionValue = Text(self.optionFont, self.options[option]["value"], tag=option)
-            optionValue.rect = (300 + 500 * round(x/5), 200 + (x * 200))
+            optionValue.rect = (950 + 600 * round(x/5), 330 + (x * 300)) #3
             optionValue.value = "int"
             leftArrow = Arrow(self.leftArrowImage, tag=option)
             leftArrow.orientation = "left"
-            leftArrow.rect.x, leftArrow.rect.y = 200 + 500 * round(x/5), 200 + (x * 200)
+            leftArrow.rect.x, leftArrow.rect.y = 830 + 500 * round(x/5), 320 + (x * 300) #fleches gauche coté + haut puis bas
             rightArrow = Arrow(self.rightArrowImage, tag=option)
             rightArrow.orientation = "right"
-            rightArrow.rect.x, rightArrow.rect.y = 400 + 500 * round(x / 5), 200 + (x * 200)
+            rightArrow.rect.x, rightArrow.rect.y = 1050 + 500 * round(x / 5), 320 + (x * 300) #fleches droite
             self.allArrow.add(leftArrow)
             self.allArrow.add(rightArrow)
             self.allText.add(optionTitle)
