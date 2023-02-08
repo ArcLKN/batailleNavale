@@ -53,7 +53,7 @@ background = pygame.transform.smoothscale(background, (display_w, display_h))
 banner = pygame.image.load('assets/Logo.png')
 banner = pygame.transform.scale(banner,(250,250))
 banner_rect = banner.get_rect()
-banner_rect.x = round(screen.get_width()/2.6)
+banner_rect.x = round(screen.get_width()/2.3)
 
 #importer charger notre bouton pour lancer la partie
 play_button = pygame.image.load('assets/start.png')
