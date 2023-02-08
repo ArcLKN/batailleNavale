@@ -535,7 +535,7 @@ class Game():
             for particle in self.particules:
                 particle[0][0] += particle[1][0] * (random.choice([0, 2]) - 1)
                 particle[0][1] += particle[1][1] * (random.choice([0, 2]) - 1)
-                particle[2] -= 5
+                particle[2] -= 2
                 if len(particle) > 4:
                     particle[3] = self.change_color_particle(particle)
                 pygame.draw.circle(screen, particle[3], particle[0], particle[2])

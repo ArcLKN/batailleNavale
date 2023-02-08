@@ -87,7 +87,7 @@ game = Game(resolution, screen)  # pour appeler les diff√©rentes fonctions situ√
 
 is_running = True
 
-pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Menu.mp3"))
+pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Menu.mp3"), loops=-1)
 
 while is_running:  # tant que la boucle est vraie le jeu continue
 
@@ -148,13 +148,14 @@ while is_running:  # tant que la boucle est vraie le jeu continue
                     game.is_option = False
                     game.initialisation()
                     game.is_playing = True
-                    game.sound.musicQueueList[0].append("SFX/Background.mp3")
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Background.mp3"), loops=-1)
             if continue_button_rect.collidepoint(event.pos):
                 if not game.is_playing and not game.is_option:
                     pygame.mixer.Channel(2).play(pygame.mixer.Sound("SFX/WW_MainMenu_CopyErase_Start.wav"))
                     game.loading()
                     game.is_playing = True
                     game.status = "waiting"
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound("SFX/Background.mp3"), loops=-1)
 
         if game.is_playing:
             if not game.is_pausing:
