@@ -59,10 +59,10 @@ class Cross(pygame.sprite.Sprite):
         self.rect.y = 0
 
 class Letter(pygame.sprite.Sprite):
-    def __init__(self, font, value):
+    def __init__(self, font, value, color):
         super(Letter, self).__init__()
         self.font = font
-        self.color = [255, 255, 255]
+        self.color = color
         self.value = value
         self.axis = str()
         self.rect = [0, 0]
@@ -103,19 +103,33 @@ class Board(pygame.sprite.Sprite):
         self.gridFlopImage = pygame.transform.smoothscale(self.gridFlopImage, (self.tileSize, self.tileSize))
 
         font = pygame.font.SysFont('Comic Sans MS', round(self.tileSize / 2))
+        outline = 6
+        outlineFont = pygame.font.SysFont('Comic Sans MS', round(self.tileSize / 2)+outline)
         alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
 
         for y in range(0, self.size):
 
             # créations des lettres sur les côtés
-            letter = Letter(font, str(y+1))
+            letter = Letter(outlineFont, str(y + 1), [0, 0, 0])
             letter.axis = "y"
             letter.rect[0] = 0 * self.tileSize + (self.game.resolution[0] / 2 - self.size * self.tileSize / 2)
-            letter.rect[0] -= (self.tileSize + len(str(y+1))*7)  # pour l'écarter un peu du terrain
+            letter.rect[0] -= (self.tileSize + len(str(y + 1)) * 7) + outline / 2 # pour l'écarter un peu du terrain
+            letter.rect[1] = (y * self.tileSize + self.game.resolution[3] / 2) - outline / 2
+            self.allLetters.add(letter)
+            letter = Letter(font, str(y+1), [255, 255, 255])
+            letter.axis = "y"
+            letter.rect[0] = 0 * self.tileSize + (self.game.resolution[0] / 2 - self.size * self.tileSize / 2)
+            letter.rect[0] -= (self.tileSize + len(str(y+1))*7) # pour l'écarter un peu du terrain
             letter.rect[1] = y * self.tileSize + self.game.resolution[3] / 2
             self.allLetters.add(letter)
             # créations des lettres sur les côtés bis
-            letter = Letter(font, alphabet[y])
+            letter = Letter(outlineFont, alphabet[y], [0, 0, 0])
+            letter.axis = "x"
+            letter.rect[0] = y * self.tileSize + (
+                        self.game.resolution[0] / 2 - self.size * self.tileSize / 2) + self.tileSize / 2 - outline / 2
+            letter.rect[1] = (self.game.resolution[3] / 2 - self.tileSize) - outline / 2
+            self.allLetters.add(letter)
+            letter = Letter(font, alphabet[y], [255, 255, 255])
             letter.axis = "x"
             letter.rect[0] = y * self.tileSize + (self.game.resolution[0] / 2 - self.size * self.tileSize / 2) + self.tileSize / 2
             letter.rect[1] = self.game.resolution[3] / 2 - self.tileSize

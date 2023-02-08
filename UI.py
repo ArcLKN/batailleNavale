@@ -5,12 +5,10 @@ from board import Boat
 
 # classe pour les boutons, le nom permet de donner au bouton des actions / caractéristiques différentes, c'est son id enfaite.
 class Button(pygame.sprite.Sprite):
-    def __init__(self, x, y, name, color, surface):
+    def __init__(self, x, y, name, color, surface, image):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface(surface)  # provisoire
-        pygame.draw.rect(self.image,  # image
-                         color,  # color
-                         pygame.Rect(0, 0, surface[0], surface[1]))
+        self.image = image
+        self.image = pygame.transform.smoothscale(self.image, surface)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -24,10 +22,10 @@ class UI(pygame.sprite.Sprite):
         self.game = game  # pour avoir les fonctions dans game
         self.all_buttons = pygame.sprite.Group()  # crée un groupe pour les boutons
         # parameters : x, y, id, color, surface [x, y]
-        self.addButton(0, 0, "Airport", [200 + (randint(0, 70) - 35), 70, 70], [100, 100])
-        self.addButton(100, 0, "Battleship", [200 + (randint(0, 70) - 35), 70, 70], [100, 100])
-        self.addButton(200, 0, "Ship", [200 + (randint(0, 70) - 35), 70, 70], [100, 100])
-        self.addButton(0, self.game.resolution[1] - 150, "Hit", [255, 0, 0], [150, 150])
+        self.addButton(0, 0, "Airport", [200 + (randint(0, 70) - 35), 70, 70], [100, 100], pygame.image.load("assets/airportButton.png"))
+        self.addButton(100, 0, "Battleship", [200 + (randint(0, 70) - 35), 70, 70], [100, 100], pygame.image.load("assets/battleshipButton.png"))
+        self.addButton(200, 0, "Ship", [200 + (randint(0, 70) - 35), 70, 70], [100, 100], pygame.image.load("assets/shipButton.png"))
+        self.addButton(20, self.game.resolution[1] - 170, "Hit", [255, 0, 0], [150, 150], pygame.image.load("assets/tirer.png"))
         self.is_positioning = False
 
     def putBoat(self, name, board, user="player"):
@@ -195,6 +193,6 @@ class UI(pygame.sprite.Sprite):
                     else:
                         e.clicked = False
 
-    def addButton(self, x, y, name, color, surface):
-        button = Button(x, y, name, color, surface)
+    def addButton(self, x, y, name, color, surface, image):
+        button = Button(x, y, name, color, surface, image)
         self.all_buttons.add(button)

@@ -71,6 +71,7 @@ class Game():
         self.status = "positionning"
         self.timer = 120
         self.turn = 0
+        self.particules = []
 
         self.is_running = True
         self.is_pausing = False
@@ -116,12 +117,14 @@ class Game():
         data["Computer"] = {
             "Crosses": [],
             "Boats": [],
+            "Tiles": [],
             "size": self.computer_board.size,
             "life": self.computer_board.life
         }
         data["Player"] = {
             "Crosses": [],
             "Boats": [],
+            "Tiles": [],
             "size": self.computer_board.size,
             "life": self.computer_board.life
         }
@@ -133,6 +136,14 @@ class Game():
                     "y": cross.rect.y,
                     "tag": "player",
                     "status": cross.status
+                }
+            )
+        for tile in self.computer_board.all_tiles:
+            data["Computer"]["Tiles"].append(
+                {
+                    "coordonnee": tile.coordonnee,
+                    "is_boat_on": tile.is_boat_on,
+                    "is_cross_on": tile.is_cross_on
                 }
             )
         for boat in self.computer_board.all_boats:
@@ -159,6 +170,14 @@ class Game():
                     "y": cross.rect.y,
                     "tag": "player",
                     "status": cross.status
+                }
+            )
+        for tile in self.player_board.all_tiles:
+            data["Player"]["Tiles"].append(
+                {
+                    "coordonnee": tile.coordonnee,
+                    "is_boat_on": tile.is_boat_on,
+                    "is_cross_on": tile.is_cross_on
                 }
             )
         for boat in self.player_board.all_boats:
@@ -192,11 +211,11 @@ class Game():
         self.computer_board.initialization()
         for e in data["Player"]["Boats"]:
             boat = Boat()
+            boat.rotation = e['rotation']
             boat.size_x = e['size_x']
             boat.size_y = e['size_y']
             boat.width = e['width']
             boat.height = e['height']
-            boat.rotation = e['rotation']
             boat.positioning = e['positioning']
             boat.user = e['user']
             boat.is_touched = e['is_touched']
@@ -211,8 +230,14 @@ class Game():
             else:
                 color = [30, 30, 50]
                 boat.width = 2
-            boat.image = pygame.Surface([boat.size_x, boat.size_y])
-            boat.rect = pygame.draw.rect(boat.image,  # image
+            if boat.rotation:
+                boat.image = pygame.Surface([boat.size_y, boat.size_x])
+                boat.rect = pygame.draw.rect(boat.image,  # image
+                                             color,  # color
+                                             pygame.Rect(0, 0, boat.size_y, boat.size_x))
+            else:
+                boat.image = pygame.Surface([boat.size_x, boat.size_y])
+                boat.rect = pygame.draw.rect(boat.image,  # image
                                                      color,  # color
                                                      pygame.Rect(0, 0, boat.size_x, boat.size_y))
             boat.rect.x = e['x']
@@ -230,14 +255,19 @@ class Game():
             cross.rect.x = e['x']
             cross.rect.y = e['y']
             self.player_board.allCross.add(cross)
+        for e in data["Player"]["Tiles"]:
+            for tile in self.player_board.all_tiles:
+                if tile.coordonnee == e['coordonnee']:
+                    tile.is_boat_on = e["is_boat_on"]
+                    tile.is_cross_on = e["is_cross_on"]
 
         for e in data["Computer"]["Boats"]:
             boat = Boat()
+            boat.rotation = e['rotation']
             boat.size_x = e['size_x']
             boat.size_y = e['size_y']
             boat.width = e['width']
             boat.height = e['height']
-            boat.rotation = e['rotation']
             boat.positioning = e['positioning']
             boat.user = e['user']
             boat.is_touched = e['is_touched']
@@ -252,10 +282,16 @@ class Game():
             else:
                 color = [30, 30, 50]
                 boat.width = 2
-            boat.image = pygame.Surface([boat.size_x, boat.size_y])
-            boat.rect = pygame.draw.rect(boat.image,  # image
-                                                     color,  # color
-                                                     pygame.Rect(0, 0, boat.size_x, boat.size_y))
+            if boat.rotation:
+                boat.image = pygame.Surface([boat.size_y, boat.size_x])
+                boat.rect = pygame.draw.rect(boat.image,  # image
+                                             color,  # color
+                                             pygame.Rect(0, 0, boat.size_y, boat.size_x))
+            else:
+                boat.image = pygame.Surface([boat.size_x, boat.size_y])
+                boat.rect = pygame.draw.rect(boat.image,  # image
+                                             color,  # color
+                                             pygame.Rect(0, 0, boat.size_x, boat.size_y))
             boat.rect.x = e['x']
             boat.rect.y = e['y']
             self.computer_board.all_boats.add(boat)
@@ -271,6 +307,18 @@ class Game():
             cross.rect.x = e['x']
             cross.rect.y = e['y']
             self.computer_board.allCross.add(cross)
+
+        for e in data["Computer"]["Tiles"]:
+            for tile in self.computer_board.all_tiles:
+                if tile.coordonnee == e['coordonnee']:
+                    tile.is_boat_on = e["is_boat_on"]
+                    tile.is_cross_on = e["is_cross_on"]
+
+        self.greyTile = pygame.Surface([self.player_board.tileSize, self.player_board.tileSize])
+        pygame.draw.rect(self.greyTile,  # image
+                         [30, 30, 30],  # color
+                         pygame.Rect(0, 0, self.player_board.tileSize, self.player_board.tileSize))
+        self.greyTileRect = self.greyTile.get_rect()
 
     def ratio(self, size_u_have, size_u_want):
         theRatio = size_u_want / max(size_u_have[0], size_u_have[1])
@@ -288,6 +336,11 @@ class Game():
         self.computer_board.initialization()
         self.computer = Computer(self)
         self.computer_board.name = "computer"
+        self.greyTile = pygame.Surface([self.player_board.tileSize, self.player_board.tileSize])
+        pygame.draw.rect(self.greyTile,  # image
+                         [30,30,30],  # color
+                         pygame.Rect(0, 0, self.player_board.tileSize, self.player_board.tileSize))
+        self.greyTileRect = self.greyTile.get_rect()
 
     def emptying(self):
         # vide chaque groupe de sprite
@@ -369,6 +422,17 @@ class Game():
                 y = random.randint(0, tileSize * (self.computer_board.size - 1))
                 result = self.hitCase((x, y), self.computer_board, self.player_board, "computer")
 
+    def change_color_particle(self, particle):
+        new_color = []
+        for color in particle[3]:
+            if color > 200:
+                color -= random.randint(0, 50)
+                new_color.append(color)
+            else:
+                color += random.randint(0, 50)
+                new_color.append(color)
+        return new_color
+
 # Fonction qui gère le tir du joueur et de l'ordinateur.
 # Vérifie que le tir est effectue sur une case valide
     def hitCase(self, mousePos, selfBoard, hittingBoard, tag):
@@ -388,11 +452,21 @@ class Game():
                     print(hittingBoard.name,"got hit, life :", str(hittingBoard.life))
                     if tag == "player":
                         self.sound.musicQueueList[1].append(self.sound.bomb)
+                        for i in range(10):
+                            self.particules.append(
+                                [[mousePos[0] + random.randint(0, 200)-100, mousePos[1] + random.randint(0, 200)-100]
+                                    , [random.randint(0, 20) / 10 - 1, -2], random.randint(40, 120),
+                                 (0, 0, 0)])
                 else:
                     status = 1
                     image = selfBoard.gridFlopImage
                     if tag == "player":
                         self.sound.musicQueueList[1].append(self.sound.flop)
+                        for i in range(10):
+                            self.particules.append(
+                                [[mousePos[0] + random.randint(0, 200)-100, mousePos[1] + random.randint(0, 200)-100]
+                                    , [random.randint(0, 20) / 10 - 1, -2], random.randint(20, 80),
+                                 (0, 0, 255)])
 
                 # Crée un nouveau sprite croix.
                 tile.is_cross_on = True
@@ -443,6 +517,12 @@ class Game():
         if self.stateBoard == "player":
             for e in self.player_board.all_tiles:
                 screen.blit(e.image, e.rect)
+            if self.status in ["waiting", "hit"]:
+                for e in self.computer_board.allCross:
+                    if e.status > 0:
+                        self.greyTileRect.x = e.rect.x
+                        self.greyTileRect.y = e.rect.y
+                        screen.blit(self.greyTile, self.greyTileRect)
             for e in self.player_board.all_boats:
                 screen.blit(e.image, e.rect)
             for e in self.player_board.allLetters:
@@ -451,6 +531,16 @@ class Game():
                 for e in self.player_board.allCross:
                     if e.status > 0:
                         screen.blit(e.image, e.rect)
+            # Appliquer les particules
+            for particle in self.particules:
+                particle[0][0] += particle[1][0] * (random.choice([0, 2]) - 1)
+                particle[0][1] += particle[1][1] * (random.choice([0, 2]) - 1)
+                particle[2] -= 5
+                if len(particle) > 4:
+                    particle[3] = self.change_color_particle(particle)
+                pygame.draw.circle(screen, particle[3], particle[0], particle[2])
+                if particle[2] <= 0:
+                    self.particules.remove(particle)
 
         # Affichage du plateau de l'ordinateur
         elif self.stateBoard == "computer":
