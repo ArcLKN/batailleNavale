@@ -27,7 +27,7 @@ class Option:
         # important
         self.game = game
         # texte
-        self.optionFont = pygame.font.SysFont('ComicSans MS', 50)
+        self.optionFont = pygame.font.SysFont('ComicSans MS', 35)
         # images
         self.option_banner = pygame.image.load('assets/optionBackground.jpg')
         self.option_banner_rect = self.option_banner.get_rect()
