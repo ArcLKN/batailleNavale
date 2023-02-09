@@ -1,4 +1,3 @@
-import json
 import os
 import pygame.sprite
 import random
@@ -7,6 +6,7 @@ from board import Board, Boat, Cross
 from computer import Computer
 from menu import Option
 from save import Save
+from pygame import *
 
 black_color = [0, 0, 0]  # pas super utile mais existe
 
@@ -487,9 +487,34 @@ class Game():
                     self.emptying()
                     self.is_playing = False
                 elif self.computer_board.life == 0:
-                    print("Le joueur a gagné !")
-                    self.emptying()
-                    self.is_playing = False
+
+                    fenetre = display.set_mode((1920, 1080))
+
+                    display.set_caption('Win')
+
+                    init()
+
+                    fond = pygame.image.load('blom.png')
+
+
+                    fond = fond.convert()
+
+
+                    jouer = True
+
+                    while jouer:
+
+                        for events in event.get():
+
+                            if events.type == QUIT:
+                                jouer = False
+
+                                quit()
+
+                        fenetre.blit(fond, (0, 0))
+
+
+                        display.flip()
                 return True
         return False
 
