@@ -125,8 +125,8 @@ class Game():
             "Crosses": [],
             "Boats": [],
             "Tiles": [],
-            "size": self.computer_board.size,
-            "life": self.computer_board.life
+            "size": self.player_board.size,
+            "life": self.player_board.life
         }
 
         for cross in self.computer_board.allCross:
@@ -201,14 +201,18 @@ class Game():
 
     def loading(self):
         data = self.save.load_data(os.getcwd())
+
         self.player_board = Board(self)  # crée le plateau du joueur
-        self.computer_board = Board(self)  # crée le plateau de l'ordi
         self.player_board.size = data["Player"]["size"]
         self.player_board.life = data["Player"]["life"]
+        self.computer_board = Board(self)  # crée le plateau de l'ordi
         self.computer_board.size = data["Computer"]["size"]
         self.computer_board.life = data["Computer"]["life"]
+        self.computer_board.name = "computer"
+
         self.player_board.initialization()
         self.computer_board.initialization()
+
         for e in data["Player"]["Boats"]:
             boat = Boat()
             boat.rotation = e['rotation']
@@ -222,24 +226,20 @@ class Game():
             boat.coordonnee = e['coordonnee']
             boat.name = e["name"]
             if boat.name == "Airport":
-                color = [30, 30, 90]
+                boat.image = pygame.image.load("assets/airport.png")
                 boat.width = 4
             elif boat.name == "Battleship":
-                color = [30, 30, 70]
+                boat.image = pygame.image.load("assets/battleship.png")
                 boat.width = 3
             else:
-                color = [30, 30, 50]
+                boat.image = pygame.image.load("assets/ship.png")
                 boat.width = 2
+            boat.image = pygame.transform.smoothscale(boat.image, (boat.size_x, boat.size_y))
             if boat.rotation:
-                boat.image = pygame.Surface([boat.size_y, boat.size_x])
-                boat.rect = pygame.draw.rect(boat.image,  # image
-                                             color,  # color
-                                             pygame.Rect(0, 0, boat.size_y, boat.size_x))
+                boat.rect = boat.image.get_rect()
+                boat.image = pygame.transform.rotate(boat.image, 90)
             else:
-                boat.image = pygame.Surface([boat.size_x, boat.size_y])
-                boat.rect = pygame.draw.rect(boat.image,  # image
-                                                     color,  # color
-                                                     pygame.Rect(0, 0, boat.size_x, boat.size_y))
+                boat.rect = boat.image.get_rect()
             boat.rect.x = e['x']
             boat.rect.y = e['y']
             self.player_board.all_boats.add(boat)
@@ -274,24 +274,20 @@ class Game():
             boat.coordonnee = e['coordonnee']
             boat.name = e["name"]
             if boat.name == "Airport":
-                color = [30, 30, 90]
+                boat.image = pygame.image.load("assets/airport.png")
                 boat.width = 4
             elif boat.name == "Battleship":
-                color = [30, 30, 70]
+                boat.image = pygame.image.load("assets/battleship.png")
                 boat.width = 3
             else:
-                color = [30, 30, 50]
+                boat.image = pygame.image.load("assets/ship.png")
                 boat.width = 2
+            boat.image = pygame.transform.smoothscale(boat.image, (boat.size_x, boat.size_y))
             if boat.rotation:
-                boat.image = pygame.Surface([boat.size_y, boat.size_x])
-                boat.rect = pygame.draw.rect(boat.image,  # image
-                                             color,  # color
-                                             pygame.Rect(0, 0, boat.size_y, boat.size_x))
+                boat.rect = boat.image.get_rect()
+                boat.image = pygame.transform.rotate(boat.image, 90)
             else:
-                boat.image = pygame.Surface([boat.size_x, boat.size_y])
-                boat.rect = pygame.draw.rect(boat.image,  # image
-                                             color,  # color
-                                             pygame.Rect(0, 0, boat.size_x, boat.size_y))
+                boat.rect = boat.image.get_rect()
             boat.rect.x = e['x']
             boat.rect.y = e['y']
             self.computer_board.all_boats.add(boat)
@@ -351,6 +347,7 @@ class Game():
         self.computer_board.allCross.empty()
         self.computer_board.all_tiles.empty()
         self.status = "positionning"
+        self.particules = []
 
 # fonction qui regarde en permanence les évènements qui se déroulent au sein du jeu et agis en conséquence
     def watching(self, event):
@@ -486,35 +483,27 @@ class Game():
                     print("L'ordinateur a gagné !")
                     self.emptying()
                     self.is_playing = False
-                elif self.computer_board.life == 0:
-
-                    fenetre = display.set_mode((1920, 1080))
-
-                    display.set_caption('Win')
-
-                    init()
-
-                    fond = pygame.image.load('blom.png')
-
-
+                    fond = pygame.image.load('assets/defeat.png')
                     fond = fond.convert()
-
-
-                    jouer = True
-
-                    while jouer:
-
-                        for events in event.get():
-
-                            if events.type == QUIT:
-                                jouer = False
-
-                                quit()
-
-                        fenetre.blit(fond, (0, 0))
-
-
+                    fond = pygame.transform.smoothscale(fond, (self.resolution[0], self.resolution[1]))
+                    while True:
+                        self.screen.blit(fond, (0, 0))
                         display.flip()
+                        for event in pygame.event.get():
+                            if event.type == pygame.KEYUP:
+                                return True
+                elif self.computer_board.life == 0:
+                    self.emptying()
+                    self.is_playing = False
+                    fond = pygame.image.load('assets/victory.png')
+                    fond = fond.convert()
+                    fond = pygame.transform.smoothscale(fond, (self.resolution[0], self.resolution[1]))
+                    while True:
+                        self.screen.blit(fond, (0, 0))
+                        display.flip()
+                        for event in pygame.event.get():
+                            if event.type == pygame.KEYUP:
+                                return True
                 return True
         return False
 

@@ -31,21 +31,19 @@ class UI(pygame.sprite.Sprite):
     def putBoat(self, name, board, user="player"):
         boat = Boat()
         if name == "Airport":
-            color = [30, 30, 90]
+            boat.image = pygame.image.load("assets/airport.png")
             boat.width = 4
         elif name == "Battleship":
-            color = [30, 30, 70]
+            boat.image = pygame.image.load("assets/battleship.png")
             boat.width = 3
         else:
-            color = [30, 30, 50]
+            boat.image = pygame.image.load("assets/ship.png")
             boat.width = 2
         boat.size_x = board.tileSize * (boat.width - 1)
         boat.size_y = board.tileSize / 3
+        boat.image = pygame.transform.smoothscale(boat.image, (boat.size_x, boat.size_y))
         #boat.size_x, boat.size_y = (boat.size_x * 7) / board.size, (boat.size_y * 7) / board.size
-        boat.image = pygame.Surface([boat.size_x, boat.size_y])
-        boat.rect = boat.rect = pygame.draw.rect(boat.image,  # image
-                                                 color,  # color
-                                                 pygame.Rect(0, 0, boat.size_x, boat.size_y))
+        boat.rect = boat.image.get_rect()
         boat.name = name
         if user == "player":
             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -53,7 +51,6 @@ class UI(pygame.sprite.Sprite):
             boat.rect.y = mouse_y
             self.is_positioning = True
             board.all_boats.add(boat)
-            self.game.computer.boatList.append(name)
         else:
             range = round(self.game.resolution[0] / 2 - self.game.computer_board.size * self.game.computer_board.tileSize / 2)
             boat.rect.x = randint(range, range + self.game.computer_board.tileSize * (self.game.computer_board.size-1))
@@ -138,6 +135,7 @@ class UI(pygame.sprite.Sprite):
                     board.life += e.width
                     print("Name :", board.name, "/ added", str(e.width), "lives ! Now", board.life, "lives.")
                     if board.name == "player":
+                        self.game.computer.boatList.append(e.name)
                         pygame.mixer.Channel(3).play(self.game.sound.putboat)
                     return True
         return False
